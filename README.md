@@ -6,7 +6,7 @@ Create React App 기반으로 변환한 PayLens 프론트엔드입니다.
 
 ```bash
 npm install
-cp .env .env
+cp .env.example .env
 npm start
 ```
 

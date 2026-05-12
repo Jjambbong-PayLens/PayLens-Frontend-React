@@ -1,23 +1,53 @@
+import { useLocation, Navigate } from "react-router-dom";
+
+function safeParseJson(value) {
+  if (!value) return null;
+
+  if (typeof value === "object") {
+    return value;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return value;
+  }
+}
+
 function ResultPage() {
+  const location = useLocation();
+
+  const documentIds = location.state?.documentIds;
+  const rawAnalysisResult = location.state?.analysisResult;
+
+  if (!rawAnalysisResult) {
+    return <Navigate to="/analysis" replace />;
+  }
+
+  const analysisResult = safeParseJson(rawAnalysisResult);
+
   return (
-    <section className="page-card">
-      <p className="eyebrow">Result</p>
-      <h2>분석 결과</h2>
-      <div className="result-grid">
-        <article>
-          <strong>상태</strong>
-          <span className="badge warning">확인 필요</span>
-        </article>
-        <article>
-          <strong>예상 미지급액</strong>
-          <p>로그인/분석 API 연결 후 실제 값 표시</p>
-        </article>
-        <article>
-          <strong>PDF 리포트</strong>
-          <p>결제 또는 리포트 API 연결 예정</p>
-        </article>
-      </div>
-    </section>
+      <main className="page">
+        <section className="card">
+          <h1>AI 분석 결과</h1>
+
+          {documentIds && (
+              <p>분석 문서 ID: {documentIds.join(", ")}</p>
+          )}
+
+          {typeof analysisResult === "string" ? (
+              <pre>{analysisResult}</pre>
+          ) : (
+              <>
+                <h2>요약</h2>
+                <p>{analysisResult.summary || "요약 정보가 없습니다."}</p>
+
+                <h2>분석 JSON</h2>
+                <pre>{JSON.stringify(analysisResult, null, 2)}</pre>
+              </>
+          )}
+        </section>
+      </main>
   );
 }
 

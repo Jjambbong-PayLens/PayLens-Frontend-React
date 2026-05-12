@@ -1,38 +1,73 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { saveAuth } from '../utils/auth';
+
+function getRequiredEnv(key) {
+  const value = process.env[key];
+
+  if (!value) {
+    throw new Error(`${key}가 .env에 없습니다.`);
+  }
+
+  return value;
+}
+
+function getOAuthConfig(provider) {
+  if (provider === 'kakao') {
+    return {
+      clientId: getRequiredEnv('REACT_APP_KAKAO_CLIENT_ID'),
+      redirectUri: getRequiredEnv('REACT_APP_KAKAO_REDIRECT_URI'),
+      loginApiUrl: getRequiredEnv('REACT_APP_KAKAO_LOGIN_API_URL'),
+      authBaseUrl: 'https://kauth.kakao.com/oauth/authorize',
+      extraParams: {},
+    };
+  }
+
+  return {
+    clientId: getRequiredEnv('REACT_APP_GOOGLE_CLIENT_ID'),
+    redirectUri: getRequiredEnv('REACT_APP_GOOGLE_REDIRECT_URI'),
+    loginApiUrl: getRequiredEnv('REACT_APP_GOOGLE_LOGIN_API_URL'),
+    authBaseUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    extraParams: {
+      scope: 'email profile',
+    },
+  };
+}
+
+function buildAuthUrl(provider) {
+  const config = getOAuthConfig(provider);
+
+  const params = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: config.redirectUri,
+    response_type: 'code',
+    ...config.extraParams,
+  });
+
+  return `${config.authBaseUrl}?${params.toString()}`;
+}
 
 function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const calledRef = useRef(false);
 
-  const kakaoAuthUrl = useMemo(() => {
-    const params = new URLSearchParams({
-      client_id: process.env.REACT_APP_KAKAO_CLIENT_ID,
-      redirect_uri: process.env.REACT_APP_KAKAO_REDIRECT_URI,
-      response_type: 'code',
-    });
-
-    return `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
-  }, []);
-
-  const googleAuthUrl = useMemo(() => {
-    const params = new URLSearchParams({
-      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
-      redirect_uri: process.env.REACT_APP_GOOGLE_REDIRECT_URI,
-      response_type: 'code',
-      scope: 'email profile',
-    });
-
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-  }, []);
+  const kakaoAuthUrl = useMemo(() => buildAuthUrl('kakao'), []);
+  const googleAuthUrl = useMemo(() => buildAuthUrl('google'), []);
 
   useEffect(() => {
     const code = searchParams.get('code');
 
     if (!code) return;
+
+    if (calledRef.current) {
+      console.log('이미 로그인 API를 호출했습니다. 중복 요청을 차단합니다.');
+      return;
+    }
+
+    calledRef.current = true;
 
     const provider = sessionStorage.getItem('oauthProvider') || 'kakao';
     handleOAuthCallback(code, provider);
@@ -41,14 +76,17 @@ function LoginPage() {
 
   const startLogin = (provider) => {
     try {
+      const authUrl = provider === 'kakao' ? kakaoAuthUrl : googleAuthUrl;
+      const config = getOAuthConfig(provider);
+
+      console.log('========== OAuth 로그인 시작 ==========' );
+      console.log('provider:', provider);
+      console.log('redirectUri:', config.redirectUri);
+      console.log('authUrl:', authUrl);
+      console.log('======================================' );
+
       sessionStorage.setItem('oauthProvider', provider);
-
-      if (provider === 'kakao') {
-        window.location.href = kakaoAuthUrl;
-        return;
-      }
-
-      window.location.href = googleAuthUrl;
+      window.location.href = authUrl;
     } catch (error) {
       alert(error.message);
     }
@@ -61,23 +99,32 @@ function LoginPage() {
     setMessage('로그인 처리 중입니다...');
 
     try {
-      const apiUrl = provider === 'kakao'
-        ? process.env.REACT_APP_KAKAO_LOGIN_API_URL
-        : process.env.REACT_APP_GOOGLE_LOGIN_API_URL;
+      const config = getOAuthConfig(provider);
+      const requestBody = { code };
 
-      const requestBody = {
-        code: code
-      };
+      console.log('========== 백엔드 로그인 요청 확인 ==========');
+      console.log('provider:', provider);
+      console.log('apiUrl:', config.loginApiUrl);
+      console.log('redirectUri:', config.redirectUri);
+      console.log('requestBody:', requestBody);
+      console.log('JSON body:', JSON.stringify(requestBody));
+      console.log('==========================================');
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
+      const response = await fetch(config.loginApiUrl, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json"
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
+
+      console.log('========== 백엔드 로그인 응답 확인 ==========');
+      console.log('response status:', response.status);
+      console.log('response ok:', response.ok);
+      console.log('response data:', data);
+      console.log('==========================================');
 
       if (!response.ok || data.isSuccess === false) {
         throw new Error(data.message || '로그인 API 호출에 실패했습니다.');
