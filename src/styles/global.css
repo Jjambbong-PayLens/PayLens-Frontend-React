@@ -321,3 +321,159 @@ input {
     flex-direction: column;
   }
 }
+
+select {
+  font: inherit;
+}
+
+.form-stack select,
+.form-stack input[type="file"] {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #dde2ee;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.form-stack button:disabled,
+.login-actions button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.upload-preview {
+  padding: 16px;
+  border-radius: 16px;
+  background: #f7f9ff;
+  border: 1px solid #e5ebff;
+}
+
+.upload-preview p {
+  margin: 8px 0 4px;
+  font-weight: 700;
+}
+
+.upload-preview span {
+  color: #687083;
+  font-size: 14px;
+}
+
+.error-message {
+  margin: 16px 0 0;
+  color: #d92d20;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.result-subtitle {
+  color: #687083;
+  margin-top: -8px;
+}
+
+.report-section {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e7eaf2;
+}
+
+.report-section h3 {
+  margin: 0 0 12px;
+}
+
+.report-section p,
+.report-section li {
+  line-height: 1.7;
+  color: #3c4354;
+}
+
+.raw-json-box {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #111827;
+  color: #f9fafb;
+}
+
+.raw-json-box summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.raw-json-box pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 0;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.file-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.file-list p {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+
+.file-list span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.report-card {
+  padding: 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  background: #f9fafb;
+}
+
+.report-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.report-card-header h3 {
+  margin: 4px 0 6px;
+}
+
+.result-grid.compact {
+  margin-top: 0;
+}
