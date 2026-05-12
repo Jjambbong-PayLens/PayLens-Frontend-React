@@ -6,7 +6,6 @@ Create React App 기반으로 변환한 PayLens 프론트엔드입니다.
 
 ```bash
 npm install
-cp .env.example .env
 npm start
 ```
 
@@ -15,14 +14,6 @@ Mac/Linux에서는 다음 명령을 사용할 수 있습니다.
 
 ```bash
 npm run start:mac
-```
-
-## OAuth Redirect URI
-
-카카오/구글 개발자 콘솔에 아래 주소를 등록하세요.
-
-```text
-http://localhost:3000/login
 ```
 
 ## 로그인 API 응답 구조
