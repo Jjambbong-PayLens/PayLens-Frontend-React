@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { getAccessToken, logout } from '../utils/auth';
 
 function MainLayout() {
@@ -20,13 +20,13 @@ function MainLayout() {
       <header className="header-wrapper">
         <div className="gnb-top">
           <div className="gnb-logo">
-            <Link to="/">
+            <NavLink to="/">
               <img
                 src="https://i.postimg.cc/htrdm6VM/Pay-Lens-logo.png"
                 style={{ height: '32px', width: 'auto' }}
                 alt="payLens 로고"
               />
-            </Link>
+            </NavLink>
           </div>
 
           <div className="gnb-active-menu">
@@ -34,21 +34,30 @@ function MainLayout() {
               <button
                 type="button"
                 className={`nav-button ${activeButton === 'Abnormal Processing' ? 'active' : ''}`}
-                onClick={() => setActiveButton('Abnormal Processing')}
+                onClick={() => {
+                  setActiveButton('Abnormal Processing');
+                  navigate('/');
+                }}
               >
                 Abnormal Processing
               </button>
               <button
                 type="button"
                 className={`nav-button ${activeButton === '플랜 비교' ? 'active' : ''}`}
-                onClick={() => setActiveButton('플랜 비교')}
+                onClick={() => {
+                  setActiveButton('플랜 비교');
+                  navigate('/pricing');
+                }}
               >
                 플랜 비교
               </button>
               <button
                 type="button"
                 className={`nav-button ${activeButton === '기능 설명' ? 'active' : ''}`}
-                onClick={() => setActiveButton('기능 설명')}
+                onClick={() => {
+                  setActiveButton('기능 설명');
+                  navigate('/explain');
+                }}
               >
                 기능 설명
               </button>
@@ -59,7 +68,19 @@ function MainLayout() {
             <div className="user-actions">
               {getAccessToken() ? (
                 <>
-                  <svg className="icon-user" viewBox="0 0 24 24" fill="black" width="24" height="24">
+                  <svg
+                    className="icon-user"
+                    viewBox="0 0 24 24"
+                    fill="black"
+                    width="24"
+                    height="24"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="마이페이지로 이동"
+                    onClick={() => navigate('/mypage')}
+                    onKeyDown={(e) => { if (e.key === 'Enter') navigate('/mypage'); }}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                   </svg>
                   <button className="btn-login" onClick={handleLogoutClick}>

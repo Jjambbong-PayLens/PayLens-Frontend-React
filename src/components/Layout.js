@@ -13,7 +13,15 @@ function Layout() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand">PayLens</div>
+        <div className="gnb-logo">
+          <NavLink to="/">
+            <img
+              src="https://i.postimg.cc/htrdm6VM/Pay-Lens-logo.png"
+              style={{ height: '32px', width: 'auto' }}
+              alt="payLens 로고"
+            />
+          </NavLink>
+        </div>
         <nav className="nav-list">
           <NavLink to="/dashboard">대시보드</NavLink>
           <NavLink to="/analysis">임금 분석</NavLink>
