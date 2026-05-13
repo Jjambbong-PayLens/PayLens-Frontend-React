@@ -4,6 +4,8 @@ import MainLayout from './components/MainLayout';
 import RequireAuth from './components/RequireAuth';
 import LoginPage from './pages/LoginPage';
 import MainPage from './pages/MainPage';
+import PricePage from './pages/PricePage';
+import ExplainPage from './pages/ExplainPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalysisPage from './pages/AnalysisPage';
 import LoadingPage from './pages/LoadingPage';
@@ -16,6 +18,8 @@ function App() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<MainPage />} />
+        <Route path="/pricing" element={<PricePage />} />
+        <Route path="/explain" element={<ExplainPage />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/login/oauth2/code/kakao" element={<LoginPage />} />
