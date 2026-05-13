@@ -135,7 +135,7 @@ function LoginPage() {
 
       saveAuth(result);
       sessionStorage.removeItem('oauthProvider');
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (error) {
       console.error(error);
       setMessage(error.message || '로그인 중 오류가 발생했습니다.');

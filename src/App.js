@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
+import MainLayout from './components/MainLayout';
 import RequireAuth from './components/RequireAuth';
 import LoginPage from './pages/LoginPage';
+import MainPage from './pages/MainPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalysisPage from './pages/AnalysisPage';
 import LoadingPage from './pages/LoadingPage';
@@ -12,7 +14,9 @@ import MyPage from './pages/MyPage';
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<MainPage />} />
+      </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/login/oauth2/code/kakao" element={<LoginPage />} />
       <Route path="/login/oauth2/code/google" element={<LoginPage />} />
