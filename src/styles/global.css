@@ -502,7 +502,7 @@ select {
   gap: 32px;
 }
 
-.gnb-logo a {
+.header-wrapper .gnb-logo a {
   display: flex;
   align-items: center;
   padding-right: 24px;
@@ -1636,4 +1636,190 @@ footer {
   margin: 0;
   font-size: 13px;
   color: #94a3b8;
+}
+/* --- MyPage.css 최종 수정 버전 --- */
+
+.mypage-container {
+  display: flex;
+  flex-direction: column; /* 🌟 무조건 세로로 쌓이게 */
+  gap: 20px; /* 🌟 각 카드 사이의 간격을 좁혀서 덜 길어 보이게 (30px -> 20px) */
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px; /* 🌟 상단 여백도 살짝 줄입니다 */
+  width: 100%;
+  background-color: #f6f7fb
+}
+
+.mypage-header {
+  margin-bottom: 20px;
+}
+
+.mypage-header h1 {
+  font-size: 26px; /* 🌟 제목 크기를 살짝 줄입니다 */
+  color: #1e1b4b;
+  margin-bottom: 8px;
+}
+
+.mypage-header p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* 둥근 박스(카드) 공통 스타일 */
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px; /* 🌟 핵심: 카드 내부 여백을 시안처럼 쾌적하게 줄입니다 (28px -> 20px) */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); /* 은은한 그림자 */
+  border: 1px solid #e2e8f0;
+  width: 100%; /* 🌟 핵심: 카드가 무조건 부모 너비를 다 차지하게 강제합니다 */
+  box-sizing: border-box; /* 패딩을 포함한 전체 너비 계산 */
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px; /* 🌟 제목과 테이블 사이 간격을 줄입니다 (15px -> 10px) */
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.section-header h3 {
+  font-size: 16px;
+  color: #334155;
+  font-weight: 600;
+}
+
+/* 프로필 정보 그리드 */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px; /* 🌟 정보 사이 간격 조정 */
+}
+
+.info-group label {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.info-group p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+/* 🌟🌟🌟 테이블 불규칙 문제 해결의 핵심 🌟🌟🌟 */
+.mypage-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* 🌟 핵심: 콘텐츠가 아무리 길어도 컬럼 너비를 CSS 비율대로 강제 고정합니다 */
+}
+
+/* 모든 테이블 헤더/셀 공통 패딩 */
+.mypage-table th, 
+.mypage-table td {
+  padding: 10px; /* 🌟 시안의 여유를 반영하여 위아래 패딩을 통일합니다 */
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.mypage-table th {
+  color: #64748b;
+  font-weight: 500;
+  background-color: #f8fafc;
+}
+
+/* -- 결제 내역 테이블 컬럼 비율 설정 -- */
+/* 🌟 날짜(15%), 내역(40%), 금액(15%), 상태(15%), 항목(15%) */
+.table-section:nth-of-type(1) .mypage-table th:nth-child(1),
+.table-section:nth-of-type(1) .mypage-table td:nth-child(1) { width: 15%; } /* 날짜 */
+.table-section:nth-of-type(1) .mypage-table th:nth-child(2),
+.table-section:nth-of-type(1) .mypage-table td:nth-child(2) { width: 40%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; } /* 내역: 길면 ...처리 */
+.table-section:nth-of-type(1) .mypage-table th:nth-child(3),
+.table-section:nth-of-type(1) .mypage-table td:nth-child(3) { width: 15%; text-align: right; } /* 금액: 우측 정렬 */
+.table-section:nth-of-type(1) .mypage-table th:nth-child(4),
+.table-section:nth-of-type(1) .mypage-table td:nth-child(4) { width: 15%; text-align: center; } /* 상태: 중앙 정렬 */
+.table-section:nth-of-type(1) .mypage-table th:nth-child(5),
+.table-section:nth-of-type(1) .mypage-table td:nth-child(5) { width: 15%; text-align: center; } /* 항목 */
+
+/* -- 문서 보관함 테이블 컬럼 비율 설정 -- */
+/* 🌟 수민님이 수정한 컬럼명에 맞춥니다: 파일명(35%), 분석 일자(20%), 유형(15%), 결과(15%), 관리(15%) */
+.table-section:nth-of-type(2) .mypage-table th:nth-child(1),
+.table-section:nth-of-type(2) .mypage-table td:nth-child(1) { width: 35%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; } /* 파일명 */
+.table-section:nth-of-type(2) .mypage-table th:nth-child(2),
+.table-section:nth-of-type(2) .mypage-table td:nth-child(2) { width: 20%; } /* 분석 일자 */
+.table-section:nth-of-type(2) .mypage-table th:nth-child(3),
+.table-section:nth-of-type(2) .mypage-table td:nth-child(3) { width: 15%; } /* 유형 */
+.table-section:nth-of-type(2) .mypage-table th:nth-child(4),
+.table-section:nth-of-type(2) .mypage-table td:nth-child(4) { width: 15%; text-align: center; } /* 결과 */
+.table-section:nth-of-type(2) .mypage-table th:nth-child(5),
+.table-section:nth-of-type(2) .mypage-table td:nth-child(5) { width: 15%; text-align: center; } /* 관리 */
+
+
+/* 보안 섹션 스타일 */
+.security-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.security-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.security-item strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.security-item p {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* 버튼 및 뱃지 공통 */
+.more-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+}
+
+.outline-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid #1e1b4b;
+  background: white;
+  color: #1e1b4b;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.badge-success {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 11px;
 }
