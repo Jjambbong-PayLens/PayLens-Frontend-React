@@ -84,20 +84,6 @@ function MyPage() {
           <h3>계정 관리 및 보안</h3>
         </div>
         <div className="security-list">
-          <div className="security-item">
-            <div>
-              <strong>비밀번호 변경</strong>
-              <p>마지막 변경: 3개월 전</p>
-            </div>
-            <button className="outline-btn">변경하기</button>
-          </div>
-          <div className="security-item">
-            <div>
-              <strong>2단계 인증</strong>
-              <p>계정을 더욱 안전하게 보호하세요.</p>
-            </div>
-            <button className="outline-btn">설정</button>
-          </div>
           <div className="security-item danger">
             <div>
               <strong>회원 탈퇴</strong>

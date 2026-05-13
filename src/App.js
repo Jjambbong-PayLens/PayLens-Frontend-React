@@ -12,6 +12,7 @@ import LoadingPage from './pages/LoadingPage';
 import ResultPage from './pages/ResultPage';
 import PaymentPage from './pages/PaymentPage';
 import MyPage from './pages/MyPage';
+import PreAnalysisPage from './pages/PreAnalysisPage';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/result" element={<ResultPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="preanalysis" element={<PreAnalysisPage />} />
         </Route>
       </Route>
 

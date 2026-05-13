@@ -24,7 +24,7 @@ function Layout() {
         </div>
         <nav className="nav-list">
           <NavLink to="/dashboard">대시보드</NavLink>
-          <NavLink to="/analysis">임금 분석</NavLink>
+          <NavLink to="/preanalysis">임금 분석</NavLink>
           <NavLink to="/result">분석 결과</NavLink>
           <NavLink to="/payment">결제</NavLink>
           <NavLink to="/mypage">마이페이지</NavLink>
