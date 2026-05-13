@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation} from 'react-router-dom';
 import { getAccessToken, logout } from '../utils/auth';
 
 function MainLayout() {
   const navigate = useNavigate();
   const [activeButton, setActiveButton] = useState('Abnormal Processing');
 
+  const location = useLocation();
   const handleLoginClick = () => {
     navigate('/login');
   };
@@ -20,7 +21,13 @@ function MainLayout() {
       <header className="header-wrapper">
         <div className="gnb-top">
           <div className="gnb-logo">
-            <NavLink to="/">
+            <NavLink 
+              to="/"
+              style={{
+                borderRight: ['/', '/pricing', '/explain'].includes(location.pathname) ? '' : 'none',
+                paddingRight: ['/', '/pricing', '/explain'].includes(location.pathname) ? '' : '0px'
+              }}
+            >
               <img
                 src="https://i.postimg.cc/htrdm6VM/Pay-Lens-logo.png"
                 style={{ height: '32px', width: 'auto' }}

@@ -5,15 +5,12 @@ import { uploadAndAnalyzeDocumentsTogether } from "../utils/documentApi";
 function AnalysisPage() {
   const navigate = useNavigate();
 
-  // 기존 상태들
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🌟 새롭게 추가된 상태: 드래그 중인지 확인 & input 태그 리모컨
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // 🌟 공통 파일 처리 로직 (드래그로 넣든, 클릭해서 넣든 똑같이 검사하도록 하나로 묶었습니다)
   const processFiles = (selectedFiles) => {
     const pdfFiles = selectedFiles.filter(
       (file) => file.type === "application/pdf"
@@ -28,17 +25,14 @@ function AnalysisPage() {
       return;
     }
 
-    // 기존에 있던 파일에 덮어씌우기 (기존 로직 유지)
     setFiles(pdfFiles);
   };
 
-  // 1. input 클릭으로 파일 선택 시
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
     processFiles(selectedFiles);
   };
 
-  // 2. 드래그 앤 드롭 이벤트들
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -62,12 +56,10 @@ function AnalysisPage() {
     e.stopPropagation();
     setIsDragging(false);
     
-    // 마우스에서 떨어뜨린 파일들을 가져와서 처리
     const droppedFiles = Array.from(e.dataTransfer.files || []);
     processFiles(droppedFiles);
   };
 
-  // 3. '파일 선택하기' 커스텀 버튼 클릭 시 숨겨진 input 강제 클릭
   const onButtonClick = () => {
     fileInputRef.current.click();
   };
