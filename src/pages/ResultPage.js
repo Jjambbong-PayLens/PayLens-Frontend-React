@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useLocation, Navigate } from "react-router-dom";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 function safeParseJson(value) {
   if (!value) return null;
@@ -24,6 +26,7 @@ function safeParseJson(value) {
 
 function ResultPage() {
   const location = useLocation();
+  const pdfRef = useRef();
 
   const documentIds = location.state?.documentIds;
   const rawAnalysisResult = location.state?.analysisResult;
@@ -34,11 +37,42 @@ function ResultPage() {
 
   const data = safeParseJson(rawAnalysisResult);
 
+  const handleDownloadPdf = async () => {
+    const element = pdfRef.current;
+    
+    // PDF 다운로드 버튼을 숨기기 위해 임시로 스타일 변경
+    const btn = element.querySelector('.pdf-btn');
+    if(btn) btn.style.display = 'none';
+
+    try {
+      const canvas = await html2canvas(element, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`AI_분석결과_${data.문서요약?.근로자명 || '무명'}.pdf`);
+    } catch (error) {
+      console.error("PDF 생성 실패:", error);
+      alert("PDF 생성 중 오류가 발생했습니다.");
+    } finally {
+      // 버튼 다시 보이게 복구
+      if(btn) btn.style.display = 'block';
+    }
+  };
+
   if (typeof data === "string") {
     return (
       <main className="page">
-        <section className="result-container">
-          <h1>AI 분석 결과</h1>
+        <section className="result-container" ref={pdfRef}>
+          <header className="result-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h1>AI 분석 결과</h1>
+            <button className="pdf-btn" onClick={handleDownloadPdf} style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+              PDF로 저장
+            </button>
+          </header>
           <pre>{data}</pre>
         </section>
       </main>
@@ -67,9 +101,9 @@ function ResultPage() {
 
   return (
     <main className="page">
-      <div className="result-container">
+      <div className="result-container" ref={pdfRef} style={{ background: 'white', padding: '20px', borderRadius: '8px' }}>
         
-        <header className="result-header">
+        <header className="result-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1>분석 결과 상세</h1>
             <p>
@@ -77,9 +111,14 @@ function ResultPage() {
               {documentIds && <span style={{fontSize: '12px', color: '#94a3b8', marginLeft: '10px'}}> (문서 ID: {documentIds.join(", ")})</span>}
             </p>
           </div>
-          <span className={`status-badge ${getBadgeClass(data.최종판단?.임금체불가능성)}`}>
-            {data.최종판단?.임금체불가능성?.split(" ")[0] || "상태 확인 불가"}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+            <button className="pdf-btn" onClick={handleDownloadPdf} style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+              PDF로 저장
+            </button>
+            <span className={`status-badge ${getBadgeClass(data.최종판단?.임금체불가능성)}`}>
+              {data.최종판단?.임금체불가능성?.split(" ")[0] || "상태 확인 불가"}
+            </span>
+          </div>
         </header>
 
         <div className="summary-grid">
