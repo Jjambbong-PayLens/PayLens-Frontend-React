@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 function PreAnalysisPage() {
   const navigate = useNavigate();
@@ -53,15 +54,33 @@ function PreAnalysisPage() {
     }));
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     const isAllAnswered = Object.values(answers).every((val) => val !== null);
-    
+
     if (!isAllAnswered) {
       alert('정확한 분석을 위해 모든 항목에 답변해 주세요.');
       return;
     }
 
-    navigate('/analysis', { state: { preAnswers: answers } });
+    const surveyRequest = {
+      isOverFiveEmployees: answers.q1,
+      isWorkingOverFifteenHours: answers.q2,
+      isWorkingOverOneYear: answers.q3,
+      hasUnscheduledDayOff: answers.q4,
+    };
+
+    try {
+      await api.post('/api/surveys', surveyRequest);
+
+      navigate('/analysis', {
+        state: {
+          preAnswers: answers,
+        },
+      });
+    } catch (error) {
+      console.error('4대 문진 저장 실패:', error);
+      alert('4대 문진 저장 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    }
   };
 
   return (
