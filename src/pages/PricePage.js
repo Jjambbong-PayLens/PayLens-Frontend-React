@@ -96,10 +96,6 @@ function PricePage() {
               <div className="card-footer">
                 <span className="security-badge">🔒 Secure transaction</span>
               </div>
-              
-              <button className="btn-purchase">
-                {card.buttonText || '구매하기'}
-              </button>
             </div>
           ))}
         </div>

@@ -96,7 +96,7 @@ function AnalysisPage() {
     <main className="page">
       <section className="card upload-container">      
         <p className="eyebrow">analyse</p>
-        <h2>문서 분석</h2>
+        <h2>문서 업로드</h2>
         <p>급여명세서, 공제내역서 등 PDF 문서를 업로드하면 AI가 통합 분석합니다.</p>
         <div 
           className={`dropzone ${isDragging ? 'active' : ''}`}

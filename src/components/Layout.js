@@ -24,8 +24,8 @@ function Layout() {
         </div>
         <nav className="nav-list">
           <NavLink to="/dashboard">대시보드</NavLink>
-          <NavLink to="/preanalysis">임금 분석</NavLink>
-          <NavLink to="/result">분석 결과</NavLink>
+          <NavLink to="/preanalysis">분석 질문</NavLink>
+          <NavLink to="/result">업로드</NavLink>
           <NavLink to="/payment">결제</NavLink>
           <NavLink to="/mypage">마이페이지</NavLink>
         </nav>
@@ -35,7 +35,7 @@ function Layout() {
         <header className="topbar">
           <div>
             <p className="eyebrow">AI Wage Analysis</p>
-            <h1>PayLens</h1>
+            <h1>임금 분석</h1>
           </div>
           <div className="user-box">
             <span>{user?.username || '사용자'}님</span>
