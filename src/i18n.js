@@ -1,29 +1,27 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
-function loadLocales(lang) {
-  const context = require.context('./locales', true, /\.json$/);
-  let translations = {};
+function loadResources() {
+  const context = require.context('./locales', false, /\.json$/);
 
-  context.keys().forEach(key => {
-    if (key.includes(`/${lang}/`)) {
-      const jsonData = context(key);
-      translations = { ...translations, ...jsonData };
-    }
-  });
-
-  return translations;
+  return context.keys().reduce((resources, key) => {
+    const language = key.replace('./', '').replace('.json', '');
+    resources[language] = { translation: context(key) };
+    return resources;
+  }, {});
 }
 
 i18n
+  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {
-      ko: { translation: loadLocales('ko') },
-      en: { translation: loadLocales('en') },
+    resources: loadResources(),
+    fallbackLng: 'en',
+    detection: {
+      order: ['localStorage', 'cookie', 'navigator', 'htmlTag'],
+      caches: ['localStorage', 'cookie'],
     },
-    lng: 'ko', // 기본 언어
-    fallbackLng: 'ko', // 번역이 없을 경우
     interpolation: {
       escapeValue: false,
     },

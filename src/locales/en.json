@@ -1,0 +1,13 @@
+{
+	"MainLayout_nav1": "Plan Comparison",
+	"MainLayout_nav2": "Feature Guide",
+	"MainLayout_home": "Home",
+	"MainLayout_login": "Login",
+	"MainLayout_logout": "Logout",
+
+	"MainPage_subtitle": "Foreign Worker Wages",
+	"MainPage_description": "A wage detection service anyone can use easily",
+    "MainPage_button": "Detect Now",
+    "MainPage_feature-title": "Powerful Anomaly Detection Service",
+    "MainPage_feature-desc": "Powerful foreign worker wage anomaly detection feature used by experts"
+}

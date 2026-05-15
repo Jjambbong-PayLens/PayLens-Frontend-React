@@ -1,14 +1,22 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function LanguageModal({ isOpen, onClose }) {
+  const { i18n } = useTranslation();
+
   if (!isOpen) return null;
 
   const languages = [
-    { name: '한국어', region: '대한민국' },
-    { name: 'English', region: 'United States' },
-    { name: 'Tiếng Việt', region: 'Việt Nam' },
-    { name: 'Filipino', region: 'Pilipinas' },
+    { name: '한국어', region: 'South Korea', code: 'ko' },
+    { name: 'English', region: 'United States', code: 'en' },
+    { name: 'Tiếng Việt', region: 'Vietnam', code: 'vi' },
+    { name: 'Filipino', region: 'Philippines', code: 'fil' },
   ];
+
+  const handleLanguageChange = (langCode) => {
+    i18n.changeLanguage(langCode);
+    onClose();
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -24,11 +32,12 @@ function LanguageModal({ isOpen, onClose }) {
           <section className="lang-section">
             <h3>언어와 지역을 선택하세요</h3>
             <div className="lang-grid">
-              {languages.map((lang, idx) => (
-                <div key={idx} className="lang-item" onClick={() => {
-                  alert(`${lang.name}로 설정을 변경합니다.`);
-                  onClose();
-                }}>
+              {languages.map((lang) => (
+                <div 
+                  key={lang.code} 
+                  className={`lang-item ${i18n.language === lang.code ? 'selected' : ''}`}
+                  onClick={() => handleLanguageChange(lang.code)}
+                >
                   <strong>{lang.name}</strong>
                   <span>{lang.region}</span>
                 </div>
