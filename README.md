@@ -34,7 +34,8 @@ src/
  │    └── format.ts   # 금액 단위 콤마 처리, 날짜 포맷팅 등
  │
  ├── App.tsx          # 최상위 컴포넌트 및 글로벌 라우팅 설정
- └── index.tsx        # React 앱 진입점 및 렌더링```
+ └── index.tsx        # React 앱 진입점 및 렌더링
+```
 
 ## 실행
 
