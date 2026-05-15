@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation} from 'react-router-dom';
 import { getAccessToken, logout } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
+import { FiGlobe } from 'react-icons/fi';
+import LanguageModal from './LanguageModal';
 
 function MainLayout() {
   const navigate = useNavigate();
@@ -16,7 +18,7 @@ function MainLayout() {
     logout();
     window.location.reload();
   };
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useTranslation();
 
   return (
