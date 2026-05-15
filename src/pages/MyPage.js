@@ -1,55 +1,54 @@
 import React, { useState } from 'react';
 import { getUser } from '../utils/auth';
+import { useTranslation } from 'react-i18next';
 
 function MyPage() {
-  // 실제로는 백엔드에서 가져올 가상 데이터입니다.
+  const { t } = useTranslation();
+  const user = getUser();
+
   const [userInfo] = useState({
     username: '한수민',
     email: 'sumin.han@example.com',
     phone: '010-1234-5678',
     language: '한국어 (Korean)'
   });
-  const user = getUser();
   
   return (
     <main className="page mypage-container">
-      {/* 헤더 부분 */}
       <header className="mypage-header">
-        <h1>마이페이지</h1>
-        <p>계정 설정, 결제 내역 및 문서를 관리하세요.</p>
+        <h1>{t('MyPage_title')}</h1>
+        <p>{t('MyPage_description')}</p>
       </header>
 
-      {/* 섹션 1: 프로필 개요 (이미지 제외) */}
       <section className="card profile-section">
         <div className="section-header">
-          <h3>프로필 개요</h3>
+          <h3>{t('MyPage_profile_title')}</h3>
         </div>
         <div className="profile-grid">
           <div className="info-group">
-            <label>이름</label>
-            <p>{user?.username || '사용자'}</p>
+            <label>{t('MyPage_label_name')}</label>
+            <p>{user?.username || t('MyPage_user_fallback')}</p>
           </div>
           <div className="info-group">
-            <label>언어 설정</label>
+            <label>{t('MyPage_label_language')}</label>
             <p>{userInfo.language}</p>
           </div>
         </div>
       </section>
 
-      {/* 섹션 2: 결제 내역 및 영수증 */}
       <section className="card table-section">
         <div className="section-header">
-          <h3>결제 내역 및 영수증</h3>
-          <button className="more-btn">더보기</button>
+          <h3>{t('MyPage_payment_title')}</h3>
+          <button className="more-btn">{t('MyPage_btn_more')}</button>
         </div>
         <table className="mypage-table">
           <thead>
             <tr>
-              <th>날짜</th>
-              <th>내역</th>
-              <th>금액</th>
-              <th>상태</th>
-              <th>항목</th>
+              <th>{t('MyPage_th_date')}</th>
+              <th>{t('MyPage_th_details')}</th>
+              <th>{t('MyPage_th_amount')}</th>
+              <th>{t('MyPage_th_status')}</th>
+              <th>{t('MyPage_th_item')}</th>
             </tr>
           </thead>
           <tbody>
@@ -57,20 +56,19 @@ function MyPage() {
         </table>
       </section>
 
-      {/* 섹션 3: 문서 보관함 */}
       <section className="card table-section">
         <div className="section-header">
-          <h3>문서 보관함</h3>
-          <button className="more-btn">더보기</button>
+          <h3>{t('MyPage_doc_title')}</h3>
+          <button className="more-btn">{t('MyPage_btn_more')}</button>
         </div>
         <table className="mypage-table">
           <thead>
             <tr>
-              <th>파일명</th>
-              <th>분석 일자</th>
-              <th>유형</th>
-              <th>결과</th>
-              <th>관리</th>
+              <th>{t('MyPage_th_filename')}</th>
+              <th>{t('MyPage_th_analysis_date')}</th>
+              <th>{t('MyPage_th_type')}</th>
+              <th>{t('MyPage_th_result')}</th>
+              <th>{t('MyPage_th_manage')}</th>
             </tr>
           </thead>
           <tbody>
@@ -78,18 +76,18 @@ function MyPage() {
         </table>
       </section>
 
-      {/* 섹션 4: 계정 관리 및 보안 (새로 추가됨) */}
+
       <section className="card security-section">
         <div className="section-header">
-          <h3>계정 관리 및 보안</h3>
+          <h3>{t('MyPage_security_title')}</h3>
         </div>
         <div className="security-list">
           <div className="security-item danger">
             <div>
-              <strong>회원 탈퇴</strong>
-              <p>계정 및 모든 데이터를 영구적으로 삭제합니다.</p>
+              <strong>{t('MyPage_withdraw')}</strong>
+              <p>{t('MyPage_withdraw_desc')}</p>
             </div>
-            <button className="outline-btn">탈퇴하기</button>
+            <button className="outline-btn">{t('MyPage_btn_withdraw')}</button>
           </div>
         </div>
       </section>
