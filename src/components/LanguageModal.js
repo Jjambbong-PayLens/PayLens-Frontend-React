@@ -8,9 +8,9 @@ function LanguageModal({ isOpen, onClose }) {
 
   const languages = [
     { name: '한국어', region: 'South Korea', code: 'ko' },
-    { name: 'English', region: 'United States', code: 'en' },
+    { name: 'English', region: 'United States', code: 'en' }/*,
     { name: 'Tiếng Việt', region: 'Vietnam', code: 'vi' },
-    { name: 'Filipino', region: 'Philippines', code: 'fil' },
+    { name: 'Filipino', region: 'Philippines', code: 'fil' },*/
   ];
 
   const handleLanguageChange = (langCode) => {

@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { uploadAndAnalyzeDocumentsTogether } from "../utils/documentApi";
-import { useTranslation } from 'react-i18next';
 
 function AnalysisPage() {
   const navigate = useNavigate();
@@ -11,8 +10,6 @@ function AnalysisPage() {
 
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
-  
-  const { t } = useTranslation();
 
   const processFiles = (selectedFiles) => {
     const pdfFiles = selectedFiles.filter(
@@ -20,11 +17,11 @@ function AnalysisPage() {
     );
 
     if (pdfFiles.length !== selectedFiles.length) {
-      alert(t('AnalysisPage_alert_only_pdf'));
+      alert("PDF 파일만 업로드할 수 있습니다.");
     }
 
     if (pdfFiles.length > 10) {
-      alert(t('AnalysisPage_alert_max_files'));
+      alert("최대 10개 문서까지만 업로드할 수 있습니다.");
       return;
     }
 
@@ -73,7 +70,7 @@ function AnalysisPage() {
 
   const handleAnalyze = async () => {
     if (files.length === 0) {
-      alert(t('AnalysisPage_alert_no_file'));
+      alert("분석할 PDF 파일을 선택해주세요.");
       return;
     }
 
@@ -89,7 +86,7 @@ function AnalysisPage() {
       });
     } catch (error) {
       console.error(error);
-      alert(error.message || t('AnalysisPage_alert_error'));
+      alert(error.message || "문서 분석 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -99,8 +96,8 @@ function AnalysisPage() {
     <main className="page">
       <section className="card upload-container">      
         <p className="eyebrow">analyse</p>
-        <h2>{t('AnalysisPage_h2')}</h2>
-        <p>{t('AnalysisPage_description')}</p>
+        <h2>문서 업로드</h2>
+        <p>급여명세서, 공제내역서 등 PDF 문서를 업로드하면 AI가 통합 분석합니다.</p>
         <div 
           className={`dropzone ${isDragging ? 'active' : ''}`}
           onDragEnter={handleDragEnter}
@@ -118,10 +115,10 @@ function AnalysisPage() {
           />
           
           <div className="dropzone-content">
-            <p className="main-text">{t('AnalysisPage_dropzone_main')}</p>
-            <p className="sub-text">{t('AnalysisPage_dropzone_sub')}</p>
+            <p className="main-text">여기로 파일을 드래그하세요</p>
+            <p className="sub-text">또는 클릭하여 급여 명세서(PDF)를 선택하세요</p>
             <button type="button" className="select-btn" onClick={onButtonClick}>
-              {t('AnalysisPage_btn_select')}
+              파일 선택하기
             </button>
           </div>
         </div>
@@ -132,7 +129,7 @@ function AnalysisPage() {
               <li key={`${file.name}-${index}`}>
                 <span>{file.name}</span>
                 <button type="button" onClick={() => handleRemoveFile(index)}>
-                  {t('AnalysisPage_btn_delete')}
+                  삭제
                 </button>
               </li>
             ))}
@@ -146,7 +143,7 @@ function AnalysisPage() {
           disabled={loading || files.length === 0}
           style={{ marginTop: '20px', width: '100%', padding: '12px', backgroundColor: loading || files.length === 0 ? '#94A3B8' : '#1E1B4B', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: loading || files.length === 0 ? 'not-allowed' : 'pointer' }}
         >
-          {loading ? t('AnalysisPage_btn_analyzing') : t('AnalysisPage_btn_start')}
+          {loading ? "분석 중..." : "분석 시작"}
         </button>
       </section>
     </main>
