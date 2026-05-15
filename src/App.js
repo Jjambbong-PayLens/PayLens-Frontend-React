@@ -13,6 +13,7 @@ import ResultPage from './pages/ResultPage';
 import PaymentPage from './pages/PaymentPage';
 import MyPage from './pages/MyPage';
 import PreAnalysisPage from './pages/PreAnalysisPage';
+import './i18n';
 
 function App() {
   return (

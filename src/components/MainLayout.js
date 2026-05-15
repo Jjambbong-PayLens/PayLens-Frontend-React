@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation} from 'react-router-dom';
 import { getAccessToken, logout } from '../utils/auth';
+import { useTranslation } from 'react-i18next';
 
 function MainLayout() {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ function MainLayout() {
     logout();
     window.location.reload();
   };
+
+  const { t } = useTranslation();
 
   return (
     <div className="main-page">
@@ -56,7 +59,7 @@ function MainLayout() {
                   navigate('/pricing');
                 }}
               >
-                플랜 비교
+                {t('nav1')}
               </button>
               <button
                 type="button"
