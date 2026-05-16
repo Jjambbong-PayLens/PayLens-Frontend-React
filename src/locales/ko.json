@@ -59,6 +59,13 @@
 		"ExplainPage_trust-title4": "24/7 지원",
 		"ExplainPage_trust-desc4": "언제든 도움을 받을 수 있습니다",
 
+	"layout_dashboard": "대시보드",
+	"layout_preanalysis": "분석 질문",
+	"layout_result": "업로드",
+	"layout_payment": "결제",
+	"layout_mypage": "마이페이지",
+	"layout_title": "임금 분석",
+
 	"DashboardPage_user-fallback": "님, 임금 분석을 시작해보세요.",
 	"DashboardPage_description": "PayLens는 급여명세서, 근로시간, 계약 정보를 기반으로 임금 이상 여부를 확인하는 서비스입니다.",
 	"DashboardPage_btn-start": "분석 시작",
@@ -127,7 +134,11 @@
 	"ResultPage_no_reason": "판단 근거가 없습니다.",
 	"ResultPage_ai_opinion": "AI 종합 의견",
 	"ResultPage_needed_docs": "추가로 필요한 자료",
-	
+
+	"PaymentPage_title": "리포트 결제",
+	"PaymentPage_desc": "상세 PDF 분석 리포트 제공을 위한 결제 페이지입니다.",
+	"PaymentPage_button": "결제 진행",
+
 	"MyPage_title": "마이페이지",
 	"MyPage_description": "계정 설정, 결제 내역 및 문서를 관리하세요.",
 	"MyPage_profile_title": "프로필 개요",

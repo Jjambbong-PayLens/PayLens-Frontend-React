@@ -58,6 +58,13 @@
 		"ExplainPage_trust-desc3": "Customized consulting from labor experts",
 		"ExplainPage_trust-title4": "24/7 Support",
 		"ExplainPage_trust-desc4": "Help is available whenever you need it",
+
+	"layout_dashboard": "Dashboard",
+	"layout_preanalysis": "Pre-Analysis",
+	"layout_result": "Upload",
+	"layout_payment": "Payment",
+	"layout_mypage": "My Page",
+	"layout_title": "Wage Analysis",
 		
 	"DashboardPage_user-fallback": ", please start your wage analysis.",
 	"DashboardPage_description": "PayLens checks for wage anomalies based on pay stubs, working hours, and contract information.",
@@ -127,7 +134,11 @@
 	"ResultPage_no_reason": "No rationale provided.",
 	"ResultPage_ai_opinion": "AI Summary Opinion",
 	"ResultPage_needed_docs": "Additional Documents Needed",
-	
+
+	"PaymentPage_title": "Report Payment",
+	"PaymentPage_desc": "Payment page for detailed PDF analysis reports.",
+	"PaymentPage_button": "Payment",
+
 	"MyPage_title": "My Page",
 	"MyPage_description": "Manage your account settings, payment history, and documents.",
 	"MyPage_profile_title": "Profile Overview",

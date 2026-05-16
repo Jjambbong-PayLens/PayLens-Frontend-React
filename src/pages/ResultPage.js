@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useTranslation } from 'react-i18next';
 
 function safeParseJson(value) {
   if (!value) return null;
@@ -27,6 +28,7 @@ function safeParseJson(value) {
 function ResultPage() {
   const location = useLocation();
   const pdfRef = useRef();
+  const { t } = useTranslation();
 
   const documentIds = location.state?.documentIds;
   const rawAnalysisResult = location.state?.analysisResult;
@@ -40,7 +42,6 @@ function ResultPage() {
   const handleDownloadPdf = async () => {
     const element = pdfRef.current;
     
-    // PDF 다운로드 버튼을 숨기기 위해 임시로 스타일 변경
     const btn = element.querySelector('.pdf-btn');
     if(btn) btn.style.display = 'none';
 
@@ -53,12 +54,15 @@ function ResultPage() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`AI_분석결과_${data.문서요약?.근로자명 || '무명'}.pdf`);
+      
+      const fileNamePrefix = t('ResultPage_pdf_prefix');
+      const userName = data.문서요약?.근로자명 || t('ResultPage_anonymous');
+      pdf.save(`${fileNamePrefix}_${userName}.pdf`);
+      
     } catch (error) {
       console.error("PDF 생성 실패:", error);
-      alert("PDF 생성 중 오류가 발생했습니다.");
+      alert(t('ResultPage_alert_pdf_error'));
     } finally {
-      // 버튼 다시 보이게 복구
       if(btn) btn.style.display = 'block';
     }
   };
@@ -68,9 +72,9 @@ function ResultPage() {
       <main className="page">
         <section className="result-container" ref={pdfRef}>
           <header className="result-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1>AI 분석 결과</h1>
+            <h1>{t('ResultPage_h1_fallback')}</h1>
             <button className="pdf-btn" onClick={handleDownloadPdf} style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              PDF로 저장
+              {t('ResultPage_btn_pdf')}
             </button>
           </header>
           <pre>{data}</pre>
@@ -80,8 +84,8 @@ function ResultPage() {
   }
 
   const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return "- 원";
-    return amount.toLocaleString() + "원";
+    if (amount === null || amount === undefined) return `- ${t('ResultPage_currency_unit')}`;
+    return amount.toLocaleString() + t('ResultPage_currency_unit');
   };
 
   const getBadgeClass = (status) => {
@@ -93,10 +97,10 @@ function ResultPage() {
   };
 
   const titleMap = {
-    "최저임금및주휴수당": "최저임금 및 주휴수당",
-    "퇴직금미지급": "퇴직금 미지급",
-    "야간근로수당및휴업수당": "야간근로 및 휴업수당",
-    "초과근로수당휴일근로수당연차수당": "초과/휴일/연차수당"
+    "최저임금및주휴수당": t('ResultPage_map_minimum_wage'),
+    "퇴직금미지급": t('ResultPage_map_severance_pay'),
+    "야간근로수당및휴업수당": t('ResultPage_map_night_shift'),
+    "초과근로수당휴일근로수당연차수당": t('ResultPage_map_overtime')
   };
 
   return (
@@ -105,66 +109,66 @@ function ResultPage() {
         
         <header className="result-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1>분석 결과 상세</h1>
+            <h1>{t('ResultPage_h1_detail')}</h1>
             <p>
-              {data.문서요약?.확인된기간} {data.문서요약?.사업장명} 급여명세서 분석
-              {documentIds && <span style={{fontSize: '12px', color: '#94a3b8', marginLeft: '10px'}}> (문서 ID: {documentIds.join(", ")})</span>}
+              {data.문서요약?.확인된기간} {data.문서요약?.사업장명} {t('ResultPage_subtitle_analysis')}
+              {documentIds && <span style={{fontSize: '12px', color: '#94a3b8', marginLeft: '10px'}}> ({t('ResultPage_doc_id')}: {documentIds.join(", ")})</span>}
             </p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
             <button className="pdf-btn" onClick={handleDownloadPdf} style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
-              PDF로 저장
+              {t('ResultPage_btn_pdf')}
             </button>
             <span className={`status-badge ${getBadgeClass(data.최종판단?.임금체불가능성)}`}>
-              {data.최종판단?.임금체불가능성?.split(" ")[0] || "상태 확인 불가"}
+              {data.최종판단?.임금체불가능성?.split(" ")[0] || t('ResultPage_status_unknown')}
             </span>
           </div>
         </header>
 
         <div className="summary-grid">
           <div className="summary-card">
-            <h3>급여 요약</h3>
+            <h3>{t('ResultPage_summary_salary')}</h3>
             <div className="amount-row">
-              <span>총 지급액</span>
+              <span>{t('ResultPage_total_payment')}</span>
               <strong>{formatCurrency(data.공통추출항목?.총지급액)}</strong>
             </div>
             <div className="amount-row highlight">
-              <span>실수령액</span>
+              <span>{t('ResultPage_net_pay')}</span>
               <strong>{formatCurrency(data.공통추출항목?.실수령액)}</strong>
             </div>
             <div className="amount-row muted">
-              <span>공제액</span>
+              <span>{t('ResultPage_deduction')}</span>
               <span>{formatCurrency(data.공통추출항목?.총공제액)}</span>
             </div>
           </div>
 
           <div className="summary-card">
-            <h3>문서 정보</h3>
+            <h3>{t('ResultPage_doc_info')}</h3>
             <ul className="info-list">
-              <li><span>근로자명</span> <strong>{data.문서요약?.근로자명 || "-"}</strong></li>
-              <li><span>문서 유형</span> <strong>{data.문서요약?.문서유형 || "-"}</strong></li>
+              <li><span>{t('ResultPage_worker_name')}</span> <strong>{data.문서요약?.근로자명 || "-"}</strong></li>
+              <li><span>{t('ResultPage_doc_type')}</span> <strong>{data.문서요약?.문서유형 || "-"}</strong></li>
               <li>
-                <span>문서 적합도</span> 
+                <span>{t('ResultPage_doc_validity')}</span> 
                 <strong>{data.문서검증?.문서적합도 || "-"}</strong>
               </li>
-              <li><span>지급일</span> <strong>{data.공통추출항목?.급여지급일 || "-"}</strong></li>
+              <li><span>{t('ResultPage_pay_date')}</span> <strong>{data.공통추출항목?.급여지급일 || "-"}</strong></li>
             </ul>
           </div>
         </div>
 
         {data.임금체불분석 && Object.keys(data.임금체불분석).length > 0 && (
           <section className="detail-section">
-            <h2>항목별 상세 분석</h2>
+            <h2>{t('ResultPage_detail_analysis')}</h2>
             <div className="analysis-list">
               {Object.entries(data.임금체불분석).map(([key, value]) => (
                 <div className="analysis-item" key={key}>
                   <div className="item-header">
                     <h4>{titleMap[key] || key}</h4>
                     <span className={`small-badge ${getBadgeClass(value.위반가능성 || value.미지급가능성)}`}>
-                      {value.위반가능성 || value.미지급가능성 || "판단 불가"}
+                      {value.위반가능성 || value.미지급가능성 || t('ResultPage_judgment_unknown')}
                     </span>
                   </div>
-                  <p className="item-reason">{value.판단근거?.[0] || "판단 근거가 없습니다."}</p>
+                  <p className="item-reason">{value.판단근거?.[0] || t('ResultPage_no_reason')}</p>
                 </div>
               ))}
             </div>
@@ -173,13 +177,13 @@ function ResultPage() {
 
         {data.최종판단 && (
           <section className="ai-opinion-section">
-            <h2>🤖 AI 종합 의견</h2>
+            <h2>🤖 {t('ResultPage_ai_opinion')}</h2>
             <div className="opinion-box">
               <p className="opinion-desc">{data.최종판단.사용자에게보여줄설명}</p>
               
               {data.최종판단.추가로필요한자료?.length > 0 && (
                 <div className="needed-docs">
-                  <h4>⚠️ 추가로 필요한 자료</h4>
+                  <h4>⚠️ {t('ResultPage_needed_docs')}</h4>
                   <ul>
                     {data.최종판단.추가로필요한자료.map((doc, idx) => (
                       <li key={idx}>{doc}</li>
