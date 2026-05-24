@@ -161,5 +161,15 @@
 	"MyPage_security_title": "계정 관리 및 보안",
 	"MyPage_withdraw": "회원 탈퇴",
 	"MyPage_withdraw_desc": "계정 및 모든 데이터를 영구적으로 삭제합니다.",
-	"MyPage_btn_withdraw": "탈퇴하기"
+	"MyPage_btn_withdraw": "탈퇴하기",
+
+	"LoginPage_msg_processing": "로그인 처리 중입니다...",
+	"LoginPage_error_api_fail": "로그인 API 호출에 실패했습니다.",
+	"LoginPage_error_no_token": "응답에 accessToken이 없습니다.",
+	"LoginPage_error_general": "로그인 중 오류가 발생했습니다.",
+	"LoginPage_h1_line1": "외국인 근로자를 위한",
+	"LoginPage_h1_line2": "AI 임금 분석 서비스",
+	"LoginPage_description": "급여명세서와 근로 정보를 바탕으로 임금 체불 가능성을 분석합니다.",
+	"LoginPage_btn_kakao": "카카오로 시작하기",
+	"LoginPage_btn_google": "구글로 시작하기"	
 }

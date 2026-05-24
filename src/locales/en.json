@@ -161,5 +161,15 @@
 	"MyPage_security_title": "Account Management and Security",
 	"MyPage_withdraw": "Delete Account",
 	"MyPage_withdraw_desc": "Permanently delete your account and all data.",
-	"MyPage_btn_withdraw": "Delete Account"
+	"MyPage_btn_withdraw": "Delete Account",
+
+	"LoginPage_msg_processing": "Processing login...",
+	"LoginPage_error_api_fail": "Failed to call the login API.",
+	"LoginPage_error_no_token": "No accessToken found in the response.",
+	"LoginPage_error_general": "An error occurred during login.",
+	"LoginPage_h1_line1": "For foreign workers",
+	"LoginPage_h1_line2": "AI Wage Analysis Service",
+	"LoginPage_description": "We analyze the possibility of unpaid wages based on your pay stubs and employment information.",
+	"LoginPage_btn_kakao": "Continue with Kakao",
+	"LoginPage_btn_google": "Continue with Google"
 }
