@@ -8,6 +8,7 @@ function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false); // 언어 모달 상태 추가
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const handleLoginClick = () => {
     navigate('/login');
@@ -22,12 +23,14 @@ function MainLayout() {
   const currentPage = (() => {
     if (location.pathname === '/pricing') return 'pricing';
     if (location.pathname === '/explain') return 'explain';
+    if (['/news', '/glossary'].includes(location.pathname)) return 'more'
     return 'home';
   })();
 
   const getBreadcrumbLabel = () => {
     if (currentPage === 'pricing') return t('MainLayout_nav1');
     if (currentPage === 'explain') return t('MainLayout_nav2');
+    if (currentPage === 'more') return t('MainLayout_nav3');
     return 'Abnormal Processing';
   };
 
@@ -39,8 +42,8 @@ function MainLayout() {
             <NavLink 
               to="/"
               style={{
-                borderRight: ['/', '/pricing', '/explain'].includes(location.pathname) ? '' : 'none',
-                paddingRight: ['/', '/pricing', '/explain'].includes(location.pathname) ? '' : '0px'
+                borderRight: ['/', '/pricing', '/explain', '/more'].includes(location.pathname) ? '' : 'none',
+                paddingRight: ['/', '/pricing', '/explain', '/more'].includes(location.pathname) ? '' : '0px'
               }}
             >
               <img
@@ -74,6 +77,22 @@ function MainLayout() {
               >
                 {t('MainLayout_nav2')}
               </button>
+              <div 
+                className="nav-item-more"
+                onMouseEnter={() => setIsMoreOpen(true)}
+                onMouseLeave={() => setIsMoreOpen(false)}
+              >
+                <button className={`nav-button ${currentPage === 'more' ? 'active' : ''}`}>
+                  {t('MainLayout_nav3')} ▾
+                </button>
+                
+                {isMoreOpen && (
+                  <div className="dropdown-menu">
+                    <button onClick={() => navigate('/news')}>{t("MainLayout_news")}</button>
+                    <button onClick={() => navigate('/glossary')}>{t("MainLayout_glossary")}</button>
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
 
