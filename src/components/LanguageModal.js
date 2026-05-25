@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import api from '../utils/api';
 
 function LanguageModal({ isOpen, onClose }) {
   const { i18n } = useTranslation();
@@ -8,13 +9,20 @@ function LanguageModal({ isOpen, onClose }) {
 
   const languages = [
     { name: '한국어', region: 'South Korea', code: 'ko' },
-    { name: 'English', region: 'United States', code: 'en' },
+    { name: 'English', region: 'United States', code: 'en' }/*,
     { name: 'Tiếng Việt', region: 'Vietnam', code: 'vi' },
-    { name: 'Filipino', region: 'Philippines', code: 'fil' },
+    { name: 'Filipino', region: 'Philippines', code: 'fil' },*/
   ];
 
-  const handleLanguageChange = (langCode) => {
+  const handleLanguageChange = async (langCode) => {
     i18n.changeLanguage(langCode);
+
+    try {
+      await api.patch('/api/user/language', { language: langCode.toUpperCase() });
+    } catch (error) {
+      console.error('선호 언어 저장 실패:', error);
+    }
+
     onClose();
   };
 
@@ -35,7 +43,7 @@ function LanguageModal({ isOpen, onClose }) {
               {languages.map((lang) => (
                 <div 
                   key={lang.code} 
-                  className={`lang-item ${i18n.language === lang.code ? 'selected' : ''}`}
+                  className={`lang-item ${i18n.language.startsWith(lang.code) ? 'selected' : ''}`}
                   onClick={() => handleLanguageChange(lang.code)}
                 >
                   <strong>{lang.name}</strong>

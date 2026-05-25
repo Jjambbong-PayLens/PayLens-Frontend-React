@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
+import api from './api';
+
+const API_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL || 'http://api.paylens.kro.kr';
 
 function getAccessToken() {
   return localStorage.getItem("accessToken");
@@ -101,4 +103,17 @@ export async function uploadAndAnalyzeDocumentsTogether(files) {
     documentIds,
     analysisResult,
   };
+}
+
+export async function getDocuments() {
+  const response = await api.get('/api/documents');
+  return response.data;
+}
+
+export async function deleteDocuments(documentIds) {
+  const response = await api.delete('/api/documents', {
+    data: { documentIds },
+  });
+
+  return response.data;
 }

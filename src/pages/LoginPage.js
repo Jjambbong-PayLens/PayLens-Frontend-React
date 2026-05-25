@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { saveAuth } from '../utils/auth';
+import { loginWithProvider } from '../utils/authApi';
 import { NavLink } from 'react-router-dom';
 
 function getRequiredEnv(key) {
@@ -18,7 +19,6 @@ function getOAuthConfig(provider) {
     return {
       clientId: getRequiredEnv('REACT_APP_KAKAO_CLIENT_ID'),
       redirectUri: getRequiredEnv('REACT_APP_KAKAO_REDIRECT_URI'),
-      loginApiUrl: getRequiredEnv('REACT_APP_KAKAO_LOGIN_API_URL'),
       authBaseUrl: 'https://kauth.kakao.com/oauth/authorize',
       extraParams: {},
     };
@@ -27,7 +27,6 @@ function getOAuthConfig(provider) {
   return {
     clientId: getRequiredEnv('REACT_APP_GOOGLE_CLIENT_ID'),
     redirectUri: getRequiredEnv('REACT_APP_GOOGLE_REDIRECT_URI'),
-    loginApiUrl: getRequiredEnv('REACT_APP_GOOGLE_LOGIN_API_URL'),
     authBaseUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     extraParams: {
       scope: 'email profile',
@@ -102,29 +101,19 @@ function LoginPage() {
 
       console.log('========== 백엔드 로그인 요청 확인 ==========');
       console.log('provider:', provider);
-      console.log('apiUrl:', config.loginApiUrl);
+      console.log('apiUrl:', `/api/auth/${provider}`);
       console.log('redirectUri:', config.redirectUri);
       console.log('requestBody:', requestBody);
       console.log('JSON body:', JSON.stringify(requestBody));
       console.log('==========================================');
 
-      const response = await fetch(config.loginApiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      const data = await response.json();
+      const data = await loginWithProvider(provider, code);
 
       console.log('========== 백엔드 로그인 응답 확인 ==========');
-      console.log('response status:', response.status);
-      console.log('response ok:', response.ok);
       console.log('response data:', data);
       console.log('==========================================');
 
-      if (!response.ok || data.isSuccess === false) {
+      if (!data || data.isSuccess === false) {
         throw new Error(data.message || '로그인 API 호출에 실패했습니다.');
       }
 

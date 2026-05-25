@@ -81,6 +81,7 @@ function MainPage() {
           {t('MainPage_feature-desc')}<br />
         </p>
       </section>
+    
 
       {/* Footer */}
       <footer>
