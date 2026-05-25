@@ -1745,24 +1745,21 @@ function GlossaryPage() {
         exKey: 'GlossaryPage_ex_193' 
     }
     ];
-  // 🌟 페이지네이션 상태 추가
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 24; // 한 페이지에 6개 노출 (2행 3열)
 
-  // 1. 기존 필터링 로직 수행
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 24;
+
   const filteredTerms = mockTerms.filter(item => {
     const matchesSearch = item.term.includes(searchTerm) || item.en.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === '전체' || item.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // 2. 🌟 필터링된 결과를 바탕으로 페이지네이션 자르기
   const totalPages = Math.ceil(filteredTerms.length / ITEMS_PER_PAGE);
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentTermsItems = filteredTerms.slice(indexOfFirstItem, indexOfLastItem);
 
-  // 검색어나 카테고리가 바뀌면 페이지를 다시 1페이지로 리셋
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
     setCurrentPage(1);
@@ -1776,7 +1773,6 @@ function GlossaryPage() {
   return (
     <div className="glossary-page-container">
       <header className="glossary-header">
-        {/* 1. 헤더 번역 */}
         <h1>{t('GlossaryPage_header_title')}</h1>
         <p>{t('GlossaryPage_header_subtitle')}</p>
         
@@ -1797,7 +1793,6 @@ function GlossaryPage() {
             className={`chip ${activeCategory === cat ? 'active' : ''}`}
             onClick={() => handleCategoryChange(cat)}
           >
-            {/* 2. 카테고리 칩 번역 (전체는 특별히 처리) */}
             {cat === '전체' ? t('GlossaryPage_cat_all') : cat}
           </button>
         ))}
@@ -1817,10 +1812,8 @@ function GlossaryPage() {
         ))}
       </section>
 
-      {/* 페이지네이션 생략 (동일) */}
       {totalPages > 1 && (
         <div className="pagination-container">
-            {/* 이전 버튼 */}
             <button 
             className="page-arrow-btn" 
             disabled={currentPage === 1}
@@ -1843,7 +1836,6 @@ function GlossaryPage() {
             );
             })}
 
-            {/* 다음 버튼 */}
             <button 
             className="page-arrow-btn" 
             disabled={currentPage === totalPages}
@@ -1854,7 +1846,6 @@ function GlossaryPage() {
         </div>
         )}
 
-      {/* 3. 슬라이드 아웃 패널(상세보기) 번역 */}
       <div className={`detail-drawer ${selectedTerm ? 'open' : ''}`}>
         {selectedTerm && (
           <div className="drawer-inner">
@@ -1867,7 +1858,6 @@ function GlossaryPage() {
             </div>
             <div className="drawer-divider"></div>
             
-            {/* 🌟 여기가 핵심입니다! 키값을 t() 함수로 감쌌습니다. */}
             <div className="drawer-section">
               <h4>{t('GlossaryPage_drawer_def')}</h4>
               <p>{t(selectedTerm.defKey)}</p>

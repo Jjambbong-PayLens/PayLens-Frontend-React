@@ -2079,7 +2079,7 @@ background-color: #f7f8fb;
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* 전체 컨테이너 및 헤더는 기존 스타일 유지 */
+
 .news-page-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -2100,7 +2100,6 @@ background-color: #f7f8fb;
   letter-spacing: -0.02em;
 }
 
-/* 🌟 어도비 스타일 토픽 필터 버튼 영역 */
 .topic-tabs {
   display: flex;
   justify-content: center;
@@ -2127,33 +2126,29 @@ background-color: #f7f8fb;
   background-color: #f7fafc;
 }
 
-/* 활성화되었을 때 어도비 특유의 다크/세련된 스타일 */
 .topic-tab-btn.active {
   background-color: #1a1a1a;
   color: #ffffff;
 }
 
-/* 🌟 한 행에 딱 3개씩 일정하게 배치하는 3열 그리드 */
 .news-grid-3cols {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 무조건 3등분 */
+  grid-template-columns: repeat(3, 1fr);
   gap: 30px;
 }
 
-/* 태블릿이나 모바일처럼 화면이 좁아질 때의 반응형 대응 */
 @media (max-width: 1024px) {
   .news-grid-3cols {
-    grid-template-columns: repeat(2, 1fr); /* 2개씩 */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 640px) {
   .news-grid-3cols {
-    grid-template-columns: 1fr; /* 모바일은 1개씩 세로 나열 */
+    grid-template-columns: 1fr;
   }
 }
 
-/* 카드 세부 디자인 (기존과 동일하되 여백 밸런스 조정) */
 .news-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -2227,7 +2222,7 @@ background-color: #f7f8fb;
   color: #a0aec0;
   margin-top: auto;
 }
-/* 🌟 페이지네이션 하단 바 스타일 */
+
 .pagination-container {
   display: flex;
   justify-content: center;
@@ -2236,7 +2231,6 @@ background-color: #f7f8fb;
   margin-top: 60px;
 }
 
-/* 숫자 버튼 */
 .page-number-btn {
   background: none;
   border: 1px solid #e2e8f0;
@@ -2259,14 +2253,12 @@ background-color: #f7f8fb;
   color: #1a1a1a;
 }
 
-/* 활성화된 현재 페이지 숫자 버튼 */
 .page-number-btn.active {
   background-color: #1a1a1a;
   border-color: #1a1a1a;
   color: #ffffff;
 }
 
-/* 화살표 (< , >) 버튼 */
 .page-arrow-btn {
   background: none;
   border: 1px solid #e2e8f0;
@@ -2287,7 +2279,6 @@ background-color: #f7f8fb;
   color: #1a1a1a;
 }
 
-/* 더 이상 갈 곳이 없을 때 화살표 비활성화 */
 .page-arrow-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -2311,7 +2302,6 @@ background-color: #f7f8fb;
   letter-spacing: -0.02em;
 }
 
-/* 🌟 검색창 스타일 */
 .search-wrapper {
   margin-top: 30px;
   display: flex;
@@ -2335,7 +2325,6 @@ background-color: #f7f8fb;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-/* 카테고리 칩 */
 .category-chips {
   display: flex;
   justify-content: center;
@@ -2360,7 +2349,6 @@ background-color: #f7f8fb;
   border-color: #1a1a1a;
 }
 
-/* 🌟 카드 그리드 */
 .terms-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2402,11 +2390,10 @@ background-color: #f7f8fb;
   gap: 8px;
 }
 
-/* 🌟 슬라이드 아웃 패널 (Drawer) */
 .detail-drawer {
   position: fixed;
   top: 0;
-  right: -450px; /* 처음엔 숨김 */
+  right: -450px;
   width: 450px;
   height: 100vh;
   background: white;
