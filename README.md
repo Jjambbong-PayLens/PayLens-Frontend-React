@@ -70,15 +70,15 @@ src/
  │
  ├── App.js                   # 최상위 컴포넌트 및 중첩 라우팅(Nested Routing) 설정
  └── index.js                 # React 앱 진입점
-
+```
 ---
 
  ## 👥 프론트엔드 팀원 및 역할 (Team Jjambbong)
 
 | 한수민 | 정현준 | 
 | :---: | :---: | 
-| <img src="https://github.com/dh1180.png" width="100"> | <img src="https://github.com/github.png" width="100"> | <img src="https://github.com/github.png" width="100"> | <img src="https://github.com/github.png" width="100"> |
-| [@dh1180](https://github.com/dh1180) | [@github](https://github.com) | [@github](https://github.com) | [@github](https://github.com) |
+| <img src="https://github.com/dh1180.png" width="100"> | <img src="https://github.com/github.png" width="100">
+| [@dh1180](https://github.com/dh1180) | [@github](https://github.com) | 
 | **FE** | **FE** |
 
 *(※ 프론트엔드 및 각 세부 파트 기여도는 레포지토리 커밋 내역을 참고해 주세요.)*
