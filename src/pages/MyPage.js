@@ -1,51 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { getUser } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
-import api from '../utils/api';
 
 function MyPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const user = getUser();
 
-  const [userInfo, setUserInfo] = useState({
-    username: user?.username || '사용자',
-    language: i18n.language
+  const [userInfo] = useState({
+    username: '홍길동',
+    email: 'gildong@example.com',
+    phone: '010-1234-5678',
+    language: '한국어 (Korean)'
   });
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await api.get('/api/user/info');
-        setUserInfo({
-          username: response.data.username,
-          language: response.data.language
-        });
-        if (i18n.language !== response.data.language) {
-          i18n.changeLanguage(response.data.language);
-        }
-      } catch (error) {
-        console.error("유저 정보를 불러오는 데 실패했습니다.", error);
-      }
-    };
-    fetchUserInfo();
-  }, [i18n]);
-
-  const handleLanguageChange = async (e) => {
-    const newLang = e.target.value;
-    
-    // 1. 사용자에게 즉시 언어 변경 적용 (기다릴 필요 없이 바로 반영)
-    i18n.changeLanguage(newLang);
-    setUserInfo(prev => ({ ...prev, language: newLang }));
-
-    // 2. 서버 저장은 백그라운드에서 조용히 수행 (실패해도 사용자에게 알림 띄우지 않음)
-    try {
-      await api.post('/api/language', { language: newLang });
-      console.log("언어 설정이 서버에 저장되었습니다.");
-    } catch (error) {
-      console.error("서버 저장 실패 (화면은 변경되었으니 안심하세요):", error);
-      // alert는 제거하여 사용자 경험을 부드럽게 유지합니다.
-    }
-  };
   
   return (
     <main className="page mypage-container">
@@ -61,12 +27,11 @@ function MyPage() {
         <div className="profile-grid">
           <div className="info-group">
             <label>{t('MyPage_label_name')}</label>
-            <p>{userInfo.username}</p>
+            <p>{user?.username || t('MyPage_user_fallback')}</p>
           </div>
-          
           <div className="info-group">
             <label>{t('MyPage_label_language')}</label>
-            <p>{i18n.language === 'ko' ? '한국어 (Korean)' : i18n.language === 'en' ? 'English (United States)' : 'Tiếng Việt (Vietnam)'}</p>
+            <p>{userInfo.language}</p>
           </div>
         </div>
       </section>
@@ -86,7 +51,8 @@ function MyPage() {
               <th>{t('MyPage_th_item')}</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+          </tbody>
         </table>
       </section>
 
@@ -105,9 +71,11 @@ function MyPage() {
               <th>{t('MyPage_th_manage')}</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+          </tbody>
         </table>
       </section>
+
 
       <section className="card security-section">
         <div className="section-header">

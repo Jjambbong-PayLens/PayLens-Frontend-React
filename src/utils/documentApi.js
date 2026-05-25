@@ -84,20 +84,6 @@ export async function analyzeDocumentsTogether(documentIds) {
   });
 }
 
-export async function updateUserLanguageAPI(langCode) {
-  const formattedLang = langCode.toUpperCase(); // 'ko' -> 'KO'
-
-  return apiFetch("/api/user/language", {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      language: formattedLang,
-    }),
-  });
-}
-
 export async function uploadAndAnalyzeDocumentsTogether(files) {
   const uploadUrlResult = await requestUploadUrls(files);
 

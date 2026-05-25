@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { updateUserLanguageAPI } from '../utils/documentApi';
+import api from '../utils/api';
 
 function LanguageModal({ isOpen, onClose }) {
   const { i18n } = useTranslation();
@@ -9,22 +9,22 @@ function LanguageModal({ isOpen, onClose }) {
 
   const languages = [
     { name: '한국어', region: 'South Korea', code: 'ko' },
-    { name: 'English', region: 'United States', code: 'en' },
-    { name: 'Tiếng Việt', region: 'Vietnam', code: 'vi' }
+    { name: 'English', region: 'United States', code: 'en' }/*,
+    { name: 'Tiếng Việt', region: 'Vietnam', code: 'vi' },
+    { name: 'Filipino', region: 'Philippines', code: 'fil' },*/
   ];
 
   const handleLanguageChange = async (langCode) => {
-    try {
-      i18n.changeLanguage(langCode);
+    i18n.changeLanguage(langCode);
 
-      await updateUserLanguageAPI(langCode);
-      
-      console.log('서버에 언어 설정이 저장되었습니다.');
+    try {
+      const apiPath = process.env.REACT_APP_USER_LANGUAGE_API_PATH || '/api/users/language';
+      await api.put(apiPath, { language: langCode.toUpperCase() });
     } catch (error) {
-      console.error('서버에 언어 설정을 저장하는데 실패했습니다:', error);
-    } finally {
-      onClose();
+      console.error('선호 언어 저장 실패:', error);
     }
+
+    onClose();
   };
 
   return (
@@ -44,7 +44,7 @@ function LanguageModal({ isOpen, onClose }) {
               {languages.map((lang) => (
                 <div 
                   key={lang.code} 
-                  className={`lang-item ${i18n.language === lang.code ? 'selected' : ''}`}
+                  className={`lang-item ${i18n.language.startsWith(lang.code) ? 'selected' : ''}`}
                   onClick={() => handleLanguageChange(lang.code)}
                 >
                   <strong>{lang.name}</strong>
