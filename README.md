@@ -77,7 +77,7 @@ src/
 
 | 한수민 | 정현준 | 
 | :---: | :---: | 
-| <img src="https://github.com/github.png" width="100"> | <img src="https://github.com/github.png" width="100">
+| <img src="https://github.com/github.png" width="100"> | <img src="https://avatars.githubusercontent.com/u/192002975?v=4" width="100">
 | [@2024125085](https://github.com/2024125085) | [@MungOMung1](https://github.com/MungOMung1) | 
 | **FE** | **FE** |
 
