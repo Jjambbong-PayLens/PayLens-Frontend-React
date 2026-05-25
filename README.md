@@ -78,7 +78,7 @@ src/
 | 한수민 | 정현준 | 
 | :---: | :---: | 
 | <img src="https://github.com/github.png" width="100"> | <img src="https://github.com/github.png" width="100">
-| [@dh1180](https://github.com/2024125085) | [@github](https://github.com/MungOMung1) | 
+| [@2024125085](https://github.com/2024125085) | [@MungOMung1](https://github.com/MungOMung1) | 
 | **FE** | **FE** |
 
 *(※ 프론트엔드 및 각 세부 파트 기여도는 레포지토리 커밋 내역을 참고해 주세요.)*
