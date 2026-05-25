@@ -1,0 +1,13 @@
+{
+	"MainLayout_nav1": "플랜 비교",
+	"MainLayout_nav2": "기능 설명",
+	"MainLayout_home": "홈",
+	"MainLayout_login": "로그인",
+	"MainLayout_logout": "로그아웃",
+
+	"MainPage_subtitle": "외국인 임금",
+	"MainPage_description": "누구나 쉽게 이용할 수 있는 임금 탐지 서비스",
+    "MainPage_button": "지금 탐지하기",
+    "MainPage_feature-title": "강력한 이상 탐지 서비스",
+    "MainPage_feature-desc": "전문가들도 사용하는 강력한 외국인 임금 이상 탐지 기능"
+}

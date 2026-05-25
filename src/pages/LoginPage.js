@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { saveAuth } from '../utils/auth';
+import { NavLink } from 'react-router-dom';
 
 function getRequiredEnv(key) {
   const value = process.env[key];
@@ -54,9 +55,6 @@ function LoginPage() {
   const [message, setMessage] = useState('');
   const calledRef = useRef(false);
 
-  const kakaoAuthUrl = useMemo(() => buildAuthUrl('kakao'), []);
-  const googleAuthUrl = useMemo(() => buildAuthUrl('google'), []);
-
   useEffect(() => {
     const code = searchParams.get('code');
 
@@ -76,7 +74,7 @@ function LoginPage() {
 
   const startLogin = (provider) => {
     try {
-      const authUrl = provider === 'kakao' ? kakaoAuthUrl : googleAuthUrl;
+      const authUrl = buildAuthUrl(provider);
       const config = getOAuthConfig(provider);
 
       console.log('========== OAuth 로그인 시작 ==========' );
@@ -138,7 +136,7 @@ function LoginPage() {
 
       saveAuth(result);
       sessionStorage.removeItem('oauthProvider');
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (error) {
       console.error(error);
       setMessage(error.message || '로그인 중 오류가 발생했습니다.');
@@ -150,7 +148,15 @@ function LoginPage() {
   return (
     <div className="login-page">
       <section className="login-card">
-        <div className="login-logo">PayLens</div>
+        <div className="gnb-logo">
+          <NavLink to="/">
+            <img
+              src="https://i.postimg.cc/htrdm6VM/Pay-Lens-logo.png"
+              style={{ height: '48px', width: 'auto', marginBottom: '16px'}}
+              alt="payLens 로고"
+            />
+          </NavLink>
+        </div>
         <h1>외국인 근로자를 위한<br />AI 임금 분석 서비스</h1>
         <p className="login-description">
           급여명세서와 근로 정보를 바탕으로 임금 체불 가능성을 분석합니다.

@@ -1,18 +1,28 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
+import MainLayout from './components/MainLayout';
 import RequireAuth from './components/RequireAuth';
 import LoginPage from './pages/LoginPage';
+import MainPage from './pages/MainPage';
+import PricePage from './pages/PricePage';
+import ExplainPage from './pages/ExplainPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalysisPage from './pages/AnalysisPage';
 import LoadingPage from './pages/LoadingPage';
 import ResultPage from './pages/ResultPage';
 import PaymentPage from './pages/PaymentPage';
 import MyPage from './pages/MyPage';
+import PreAnalysisPage from './pages/PreAnalysisPage';
+import './i18n';
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/pricing" element={<PricePage />} />
+        <Route path="/explain" element={<ExplainPage />} />
+      </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/login/oauth2/code/kakao" element={<LoginPage />} />
       <Route path="/login/oauth2/code/google" element={<LoginPage />} />
@@ -25,6 +35,7 @@ function App() {
           <Route path="/result" element={<ResultPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="preanalysis" element={<PreAnalysisPage />} />
         </Route>
       </Route>
 
