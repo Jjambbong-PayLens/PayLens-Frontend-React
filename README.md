@@ -71,6 +71,8 @@ src/
  ├── App.js                   # 최상위 컴포넌트 및 중첩 라우팅(Nested Routing) 설정
  └── index.js                 # React 앱 진입점
 
+---
+
  ## 👥 프론트엔드 팀원 및 역할 (Team Jjambbong)
 
 | 한수민 | 정현준 | 
