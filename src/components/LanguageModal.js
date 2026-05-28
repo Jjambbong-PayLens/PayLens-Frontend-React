@@ -18,8 +18,7 @@ function LanguageModal({ isOpen, onClose }) {
     i18n.changeLanguage(langCode);
 
     try {
-      const apiPath = process.env.REACT_APP_USER_LANGUAGE_API_PATH || '/api/users/language';
-      await api.put(apiPath, { language: langCode.toUpperCase() });
+      await api.patch('/api/user/language', { language: langCode.toUpperCase() });
     } catch (error) {
       console.error('선호 언어 저장 실패:', error);
     }
