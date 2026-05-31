@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { saveAuth } from '../utils/auth';
 import { NavLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 function getRequiredEnv(key) {
   const value = process.env[key];
@@ -55,7 +54,6 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const calledRef = useRef(false);
-  const {t} = useTranslation();
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -96,7 +94,7 @@ function LoginPage() {
     if (loading) return;
 
     setLoading(true);
-    setMessage(t('LoginPage_msg_processing'));
+    setMessage('로그인 처리 중입니다...');
 
     try {
       const config = getOAuthConfig(provider);
@@ -127,13 +125,13 @@ function LoginPage() {
       console.log('==========================================');
 
       if (!response.ok || data.isSuccess === false) {
-        throw new Error(data.message || t('LoginPage_error_api_fail'));
+        throw new Error(data.message || '로그인 API 호출에 실패했습니다.');
       }
 
       const result = data.result;
 
       if (!result?.accessToken) {
-        throw new Error(t('LoginPage_error_no_token'));
+        throw new Error('응답에 accessToken이 없습니다.');
       }
 
       saveAuth(result);
@@ -141,7 +139,7 @@ function LoginPage() {
       navigate('/', { replace: true });
     } catch (error) {
       console.error(error);
-      setMessage(error.message || t('LoginPage_error_general'));
+      setMessage(error.message || '로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -159,17 +157,17 @@ function LoginPage() {
             />
           </NavLink>
         </div>
-        <h1>{t('LoginPage_h1_line1')}<br />{t('LoginPage_h1_line2')}</h1>
+        <h1>외국인 근로자를 위한<br />AI 임금 분석 서비스</h1>
         <p className="login-description">
-          {t('LoginPage_description')}
+          급여명세서와 근로 정보를 바탕으로 임금 체불 가능성을 분석합니다.
         </p>
 
         <div className="login-actions">
           <button type="button" className="kakao-button" onClick={() => startLogin('kakao')} disabled={loading}>
-            {t('LoginPage_btn_kakao')}
+            카카오로 시작하기
           </button>
           <button type="button" className="google-button" onClick={() => startLogin('google')} disabled={loading}>
-            {t('LoginPage_btn_google')}
+            구글로 시작하기
           </button>
         </div>
 

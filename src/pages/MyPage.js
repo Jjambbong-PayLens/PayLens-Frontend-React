@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { getUser } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
 import { getUploadedDocuments, deleteDocuments } from '../utils/documentApi';
 import PaymentModal from './PaymentModal';
-import DocumentListModal from './DocumentListModal'; // 🌟 1. 전체 문서 모달 불러오기
+import DocumentListModal from './DocumentListModal';
 
 function MyPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const user = getUser();
 
   const [userInfo, setUserInfo] = useState({
@@ -21,7 +21,7 @@ function MyPage() {
   const [docsError, setDocsError] = useState(null);
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
-  const [isDocModalOpen, setIsDocModalOpen] = useState(false); // 🌟 2. 더보기 모달 열림 상태 State 추가
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
 
   const fetchUserInfo = async () => {
     try {
@@ -126,7 +126,7 @@ function MyPage() {
         <div className="profile-grid">
           <div className="info-group">
             <label>{t('MyPage_label_name')}</label>
-            <p>{userInfo.username}</p>
+            <p>{user?.username || t('MyPage_user_fallback')}</p>
           </div>
           <div className="info-group">
             <label>{t('MyPage_label_language')}</label>
@@ -164,11 +164,9 @@ function MyPage() {
         )}
       </section>
 
-      {/* 문서 목록 섹션 */}
       <section className="card table-section" style={{ marginTop: '24px' }}>
         <div className="section-header">
           <h3>{t('MyPage_doc_title')}</h3>
-          {/* 🌟 3. 더보기 버튼에 onClick 이벤트 바인딩하여 모달 열기 */}
           <button className="more-btn" onClick={() => setIsDocModalOpen(true)}>
             {t('MyPage_btn_more')}
           </button>
@@ -191,7 +189,6 @@ function MyPage() {
             ) : documents.length === 0 ? (
               <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>{t('MyPage_msg_no_docs')}</td></tr>
             ) : (
-              // 메인 화면 테이블에서는 기존대로 최대 5개까지만 축약 노출
               documents.slice(0, 5).map(doc => (
                 <tr key={doc.documentId}>
                   <td>{doc.fileName}</td>
@@ -231,15 +228,13 @@ function MyPage() {
         </div>
       </section>
 
-      {/* 결제 모달 */}
       <PaymentModal isOpen={isPayModalOpen} onClose={() => setIsPayModalOpen(false)} onPaymentSuccess={handlePaymentSuccess} />
 
-      {/* 🌟 4. 전체 문서 목록 조회 모달 장착! */}
       <DocumentListModal 
         isOpen={isDocModalOpen} 
         onClose={() => setIsDocModalOpen(false)} 
-        documents={documents} // 축약 없이 전체 리스트 전달
-        onDeleteDoc={handleDeleteDocument} // 모달 안에서도 똑같이 삭제 가능하도록 전송
+        documents={documents}
+        onDeleteDoc={handleDeleteDocument}
       />
     </main>
   );
