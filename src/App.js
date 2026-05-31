@@ -10,7 +10,6 @@ import DashboardPage from './pages/DashboardPage';
 import AnalysisPage from './pages/AnalysisPage';
 import LoadingPage from './pages/LoadingPage';
 import ResultPage from './pages/ResultPage';
-import PaymentPage from './pages/PaymentPage';
 import MyPage from './pages/MyPage';
 import PreAnalysisPage from './pages/PreAnalysisPage';
 import News from './pages/NewsPage';
@@ -37,7 +36,6 @@ function App() {
           <Route path="/analysis" element={<AnalysisPage />} />
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/result" element={<ResultPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/preanalysis" element={<PreAnalysisPage />} />
         </Route>

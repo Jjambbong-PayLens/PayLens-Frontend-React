@@ -85,7 +85,7 @@ export async function analyzeDocumentsTogether(documentIds) {
 }
 
 export async function updateUserLanguageAPI(langCode) {
-  const formattedLang = langCode.toUpperCase(); // 'ko' -> 'KO'
+  const formattedLang = langCode.toUpperCase();
 
   return apiFetch("/api/user/language", {
     method: "PATCH",
@@ -94,6 +94,24 @@ export async function updateUserLanguageAPI(langCode) {
     },
     body: JSON.stringify({
       language: formattedLang,
+    }),
+  });
+}
+
+export async function getUploadedDocuments() {
+  return apiFetch("/api/documents", {
+    method: "GET"
+  });
+}
+
+export async function deleteDocuments(documentIds) {
+  return apiFetch("/api/documents", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      documentIds: documentIds,
     }),
   });
 }

@@ -31,8 +31,7 @@ function Layout() {
         <nav className="nav-list">
           <NavLink to="/dashboard">{t('layout_dashboard')}</NavLink>
           <NavLink to="/preanalysis">{t('layout_preanalysis')}</NavLink>
-          <NavLink to="/result">{t('layout_result')}</NavLink>
-          <NavLink to="/payment">{t('layout_payment')}</NavLink>  
+          <NavLink to="/analysis">{t('layout_analysis')}</NavLink>
           <NavLink to="/mypage">{t('layout_mypage')}</NavLink>
         </nav>
       </aside>
