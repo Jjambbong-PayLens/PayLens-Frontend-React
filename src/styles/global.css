@@ -536,6 +536,7 @@ select {
 .sub-nav {
   display: flex;
   gap: 16px;
+  flex-wrap: nowrap;
 }
 
 .sub-nav a,
@@ -556,6 +557,7 @@ select {
   border: none;
   cursor: pointer;
   padding: 10px;
+  white-space: nowrap;
 }
 
 .nav-button.active {
@@ -765,17 +767,50 @@ footer {
     gap: 16px;
   }
 
+  .header-wrapper .gnb-logo a {
+    padding-right: 16px;
+  }
+
   .sub-nav {
     gap: 12px;
+  }
+
+  .nav-button {
+    padding: 8px 6px;
+  }
+
+  .user-actions {
+    gap: 18px;
+  }
+
+  .gnb-other {
+    gap: 16px;
   }
 }
 
 @media (max-width: 768px) {
   .gnb-top {
-    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .header-wrapper .gnb-logo a {
+    padding-right: 12px;
+  }
+
+  .sub-nav {
+    gap: 8px;
+  }
+
+  .nav-button {
+    padding: 6px 4px;
   }
 
   .gnb-other {
+    gap: 12px;
+  }
+
+  .user-actions {
     gap: 12px;
   }
 

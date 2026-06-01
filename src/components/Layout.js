@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { getUser, logout } from '../utils/auth';
+import { logoutUser } from '../utils/authApi';
 import { useTranslation } from 'react-i18next';
 import LanguageModal from './LanguageModal';
 
@@ -10,9 +11,15 @@ function Layout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useTranslation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error('로그아웃 API 실패:', error);
+    } finally {
+      logout();
+      navigate('/login', { replace: true });
+    }
   };
 
   return (
