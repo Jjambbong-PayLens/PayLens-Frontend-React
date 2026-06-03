@@ -88,11 +88,21 @@ function ResultPage() {
     return amount.toLocaleString() + t('ResultPage_currency_unit');
   };
 
-  const getBadgeClass = (status) => {
+const getBadgeClass = (status) => {
     if (!status) return "badge-neutral";
-    if (status.includes("낮음")) return "badge-safe";
-    if (status.includes("높음") || status.includes("위험")) return "badge-danger";
-    if (status.includes("추가자료필요")) return "badge-warning";
+    
+    const s = status.toLowerCase();
+
+    if (s.includes("낮음") || s.includes("low") || s.includes("thấp") || s.includes("safe")) {
+      return "badge-safe";
+    }
+    if (s.includes("높음")  || s.includes("high") || s.includes("risk") || s.includes("cao")) {
+      return "badge-danger";
+    }
+    if (s.includes("추가자료필요") || s.includes("need") || s.includes("warning") || 
+        s.includes("cần") || s.includes("trung bình") || s.includes("xác nhận") || s.includes("undetermined")) {
+      return "badge-warning";
+    }
     return "badge-neutral";
   };
 

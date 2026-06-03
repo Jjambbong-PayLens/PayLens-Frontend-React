@@ -12,6 +12,8 @@ import LoadingPage from './pages/LoadingPage';
 import ResultPage from './pages/ResultPage';
 import MyPage from './pages/MyPage';
 import PreAnalysisPage from './pages/PreAnalysisPage';
+import News from './pages/NewsPage';
+import Glossary from './pages/GlossaryPage';
 import './i18n';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
         <Route path="/" element={<MainPage />} />
         <Route path="/pricing" element={<PricePage />} />
         <Route path="/explain" element={<ExplainPage />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/glossary" element={<Glossary />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/login/oauth2/code/kakao" element={<LoginPage />} />
@@ -33,7 +37,7 @@ function App() {
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/mypage" element={<MyPage />} />
-          <Route path="preanalysis" element={<PreAnalysisPage />} />
+          <Route path="/preanalysis" element={<PreAnalysisPage />} />
         </Route>
       </Route>
 

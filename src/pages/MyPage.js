@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getUser } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
@@ -7,7 +7,7 @@ import PaymentModal from './PaymentModal';
 import DocumentListModal from './DocumentListModal';
 
 function MyPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = getUser();
 
   const [userInfo, setUserInfo] = useState({
@@ -126,7 +126,7 @@ function MyPage() {
         <div className="profile-grid">
           <div className="info-group">
             <label>{t('MyPage_label_name')}</label>
-            <p>{user?.username || t('MyPage_user_fallback')}</p>
+            <p>{userInfo.username}</p>
           </div>
           <div className="info-group">
             <label>{t('MyPage_label_language')}</label>
@@ -164,6 +164,7 @@ function MyPage() {
         )}
       </section>
 
+      {/* 문서 목록 섹션 */}
       <section className="card table-section" style={{ marginTop: '24px' }}>
         <div className="section-header">
           <h3>{t('MyPage_doc_title')}</h3>
@@ -228,6 +229,7 @@ function MyPage() {
         </div>
       </section>
 
+      {/* 결제 모달 */}
       <PaymentModal isOpen={isPayModalOpen} onClose={() => setIsPayModalOpen(false)} onPaymentSuccess={handlePaymentSuccess} />
 
       <DocumentListModal 
