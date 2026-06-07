@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { uploadAndAnalyzeDocumentsTogether } from "../utils/documentApi";
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,10 @@ function AnalysisPage() {
 
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  
+  const [loadingStage, setLoadingStage] = useState(""); 
+  
+  const [checking, setChecking] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   
@@ -71,29 +74,51 @@ function AnalysisPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleAnalyze = async () => {
-    if (files.length === 0) {
-      alert(t('AnalysisPage_alert_no_file'));
-      return;
-    }
+const handleAnalyze = async () => {
+  if (files.length === 0) {
+    alert(t('AnalysisPage_alert_no_file'));
+    return;
+  }
 
-    try {
-      setLoading(true);
-      const result = await uploadAndAnalyzeDocumentsTogether(files);
+  const primaryFileName = files[0]?.name || "분석된 원본 문서.pdf";
 
-      navigate("/result", {
-        state: {
-          documentIds: result.documentIds,
-          analysisResult: result.analysisResult,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-      alert(error.message || t('AnalysisPage_alert_error'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setLoadingStage("ocr");
+
+    const stageTimer = setTimeout(() => {
+      setLoadingStage("gemini");
+    }, 4500); 
+
+    const result = await uploadAndAnalyzeDocumentsTogether(files);
+    clearTimeout(stageTimer);
+
+    console.log("🚀 [AnalysisPage 최종 결과 안착 확인]:", result);
+
+    const targetId = (result.documentIds && result.documentIds.length > 0) ? result.documentIds[0] : 8;
+
+    navigate(`/result/${targetId}`, {
+      state: {
+        documentIds: result.documentIds || [targetId],
+        analysisResult: result.analysisResult,
+        fileName: primaryFileName,
+      },
+    });
+
+  } catch (error) {
+    console.error("🚨 분석 프로세스 도중 런타임 예외 감지:", error);
+    alert(error.message || t('AnalysisPage_alert_error'));
+  } finally {
+    setLoading(false);
+    setLoadingStage("");
+  }
+};
+
+  useEffect(() => {
+    setChecking(false);
+  }, []);
+
+  if (checking) return <div>{t('AnalysisPage_checking', '정보 확인 중...')}</div>;
 
   return (
     <main className="page">
@@ -144,9 +169,25 @@ function AnalysisPage() {
           type="button"
           onClick={handleAnalyze}
           disabled={loading || files.length === 0}
-          style={{ marginTop: '20px', width: '100%', padding: '12px', backgroundColor: loading || files.length === 0 ? '#94A3B8' : '#1E1B4B', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: loading || files.length === 0 ? 'not-allowed' : 'pointer' }}
+          style={{ 
+            marginTop: '20px', 
+            width: '100%', 
+            padding: '12px', 
+            backgroundColor: loading || files.length === 0 ? '#94A3B8' : '#1E1B4B', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '6px', 
+            fontWeight: 'bold', 
+            cursor: loading || files.length === 0 ? 'not-allowed' : 'pointer' 
+          }}
         >
-          {loading ? t('AnalysisPage_btn_analyzing') : t('AnalysisPage_btn_start')}
+          {loading ? (
+            loadingStage === "ocr" 
+              ? "🔍 원본 문서에서 OCR 추출 중입니다..." 
+              : "🧠 AI(Gemini)를 통해 임금 체불 리스크를 분석 중입니다..."
+          ) : (
+            t('AnalysisPage_btn_start')
+          )}
         </button>
       </section>
     </main>
