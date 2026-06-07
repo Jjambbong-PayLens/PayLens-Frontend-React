@@ -183,8 +183,8 @@ const handleAnalyze = async () => {
         >
           {loading ? (
             loadingStage === "ocr" 
-              ? "🔍 원본 문서에서 OCR 추출 중입니다..." 
-              : "🧠 AI(Gemini)를 통해 임금 체불 리스크를 분석 중입니다..."
+              ? "원본 문서에서 OCR 추출 중입니다..." 
+              : "AI를 통해 임금 체불 리스크를 분석 중입니다..."
           ) : (
             t('AnalysisPage_btn_start')
           )}
