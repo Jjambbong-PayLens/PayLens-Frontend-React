@@ -15,6 +15,7 @@ import PreAnalysisPage from './pages/PreAnalysisPage';
 import News from './pages/NewsPage';
 import Glossary from './pages/GlossaryPage';
 import './i18n';
+import ReviewPage from "./pages/ReviewPage";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/analysis" element={<AnalysisPage />} />
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/result" element={<ResultPage />} />
+          <Route path="/review/:analysisId" element={<ReviewPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/preanalysis" element={<PreAnalysisPage />} />
         </Route>
