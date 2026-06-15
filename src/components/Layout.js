@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { getUser, logout } from '../utils/auth';
+import { logout } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
 import LanguageModal from './LanguageModal';
 
 function Layout() {
   const navigate = useNavigate();
-  const user = getUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useTranslation();
   const location = useLocation();

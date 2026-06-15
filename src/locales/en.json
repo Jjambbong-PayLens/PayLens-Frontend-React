@@ -94,6 +94,12 @@
     "NewsPage_title_8": "Case Studies of Excellence in Counseling at Foreigner Support Centers",
     "NewsPage_summary_8": "Actual cases of peacefully resolving conflicts occurring at workplaces.",
 
+
+    "GlossaryPage_cat_salary" : "Salary",
+    "GlossaryPage_cat_contract" : "Contract",
+    "GlossaryPage_cat_work" : "Labor & Work",
+    "GlossaryPage_cat_insurance" : "Insurance",
+    "GlossaryPage_cat_tax" : "Tax",
     "GlossaryPage_def_1": "A system that sets the minimum wage level for workers by law and compels employers to pay at least this amount, with the state intervening in the wage-setting process between labor and management.",
     "GlossaryPage_ex_1": "As of 2026, the legal minimum hourly wage applies to all workplaces; violations can lead to up to 3 years in prison or fines of up to 20 million KRW.",
     "GlossaryPage_def_2": "The most basic contract wage excluding additional allowances, based on job performance ability, skills, responsibilities, age, or years of service.",

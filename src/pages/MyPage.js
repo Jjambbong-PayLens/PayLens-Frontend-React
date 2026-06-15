@@ -1,95 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getUser } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
-import { getUploadedDocuments, deleteDocuments } from '../utils/documentApi';
 import PaymentModal from './PaymentModal';
 import DocumentListModal from './DocumentListModal';
 
 function MyPage() {
   const { t, i18n } = useTranslation();
   const user = getUser();
+  const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = useState({
-    username: user?.username || t('MyPage_default_username'),
+    username: user?.username || localStorage.getItem('nickname') || t('MyPage_default_username'),
     language: i18n.language,
     isSubscribed: false 
   });
-
-  const [documents, setDocuments] = useState([]);
+ 
+  const [analyses, setAnalyses] = useState([]);
   const [isDocsLoading, setIsDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState(null);
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
-  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false); 
 
-  const fetchUserInfo = async () => {
-    try {
-      const response = await api.get('/api/user/info');
-      setUserInfo({
-        username: response.data.username,
-        language: response.data.language,
-        isSubscribed: response.data.subscribed || false 
-      });
-      if (i18n.language !== response.data.language) {
-        i18n.changeLanguage(response.data.language);
-      }
-    } catch (error) {
-      console.error("유저 정보를 불러오는 데 실패했습니다.", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserInfo();
-  }, [i18n]);
-
-  const fetchDocuments = async () => {
+  const totalCount = analyses.length;
+  const currentMonth = new Date().getMonth();
+  const newThisMonthCount = analyses.filter(a => new Date(a.createdAt).getMonth() === currentMonth).length;
+  
+  const fetchAnalyses = useCallback(async () => {
     try {
       setIsDocsLoading(true);
       setDocsError(null);
-      const data = await getUploadedDocuments();
-      let safeDocs = [];
-      if (Array.isArray(data)) {
-        safeDocs = data;
-      } else if (data && Array.isArray(data.documents)) {
-        safeDocs = data.documents;
-      }
-      setDocuments(safeDocs);
+      
+      const response = await api.get('/api/analyses');
+      const data = response.data.result || [];
+      
+      setAnalyses(data);
     } catch (error) {
-      console.error("문서 목록 조회 실패:", error);
-      setDocsError(t('MyPage_error_load_docs'));
-      setDocuments([]);
+      console.error("분석 리포트 목록 조회 실패:", error);
+      setDocsError(t('MyPage_error_load_docs', '분석 기록을 불러오지 못했습니다.'));
+      setAnalyses([]);
     } finally {
       setIsDocsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchDocuments();
   }, [t]);
 
-  const handleLanguageChange = async (e) => {
-    const newLang = e.target.value;
-    i18n.changeLanguage(newLang);
-    setUserInfo(prev => ({ ...prev, language: newLang }));
-    try {
-      await api.post('/api/language', { language: newLang });
-    } catch (error) {
-      console.error("서버 저장 실패:", error);
-    }
-  };
+  useEffect(() => {
+    fetchAnalyses();
+  }, [fetchAnalyses]);
+
   
-  const handleDeleteDocument = async (documentId) => {
-    const isConfirm = window.confirm(t('MyPage_confirm_delete_doc'));
+  const handleDeleteAnalysis = async (analysisId) => {
+    const isConfirm = window.confirm(t('MyPage_confirm_delete_doc', '정말 이 분석 기록을 삭제하시겠습니까?'));
     if (!isConfirm) return;
 
     try {
-      await deleteDocuments([documentId]);
-      setDocuments((prevDocs) => prevDocs.filter((doc) => doc.documentId !== documentId));
-      alert(t('MyPage_alert_delete_success'));
+      await api.delete(`/api/analyses/${analysisId}`);
+      setAnalyses((prev) => prev.filter((item) => item.analysisId !== analysisId));
+      alert(t('MyPage_alert_delete_success', '삭제되었습니다.'));
     } catch (error) {
-      console.error("문서 삭제 실패:", error);
-      alert(error.message || t('MyPage_alert_delete_fail'));
+      console.error("분석 기록 삭제 실패:", error);
+      alert(t('MyPage_alert_delete_fail', '삭제에 실패했습니다.'));
+    }
+  };
+
+  const handleViewAnalysis = async (analysisId) => {
+    try {
+      const response = await api.get(`/api/analyses/${analysisId}`);
+      navigate(`/result/${analysisId}`, { 
+        state: { analysisResult: response.data.result } 
+      });
+    } catch (error) {
+      console.error("상세 분석 결과를 불러오는데 실패했습니다.", error);
+      alert(t('MyPage_alert_fetch_fail', '분석 결과를 불러오는 데 실패했습니다.'));
     }
   };
 
@@ -109,7 +93,7 @@ function MyPage() {
   };
 
   const handlePaymentSuccess = () => {
-    fetchUserInfo();
+    setUserInfo(prev => ({ ...prev, isSubscribed: true }));
   };
 
   return (
@@ -120,7 +104,7 @@ function MyPage() {
       </header>
 
       <section className="card profile-section">
-        <div className="section-header">
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3>{t('MyPage_profile_title')}</h3>
         </div>
         <div className="profile-grid">
@@ -131,6 +115,16 @@ function MyPage() {
           <div className="info-group">
             <label>{t('MyPage_label_language')}</label>
             <p>{i18n.language === 'ko' ? t('MyPage_lang_ko') : i18n.language === 'en' ? t('MyPage_lang_en') : t('MyPage_lang_vi')}</p>
+          </div>
+          <div className="info-group" style={{ gridColumn: '1 / -1', marginTop: '12px', display: 'flex', gap: '20px', borderTop: '1px dashed #e2e8f0', paddingTop: '12px' }}>
+            <div>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>{t('MyPage_total_reports', '총 분석 리포트')}: </span>
+              <strong style={{ color: '#1e1b4b' }}>{totalCount}개</strong>
+            </div>
+            <div>
+              <span style={{ fontSize: '13px', color: '#64748b' }}>{t('MyPage_month_reports', '이번 달 생성 리포트')}: </span>
+              <strong style={{ color: '#4f46e5' }}>{newThisMonthCount}개</strong>
+            </div>
           </div>
         </div>
       </section>
@@ -164,10 +158,9 @@ function MyPage() {
         )}
       </section>
 
-      {/* 문서 목록 섹션 */}
       <section className="card table-section" style={{ marginTop: '24px' }}>
         <div className="section-header">
-          <h3>{t('MyPage_doc_title')}</h3>
+          <h3>{t('MyPage_analysis_title', '내 분석 리포트')}</h3>
           <button className="more-btn" onClick={() => setIsDocModalOpen(true)}>
             {t('MyPage_btn_more')}
           </button>
@@ -175,11 +168,11 @@ function MyPage() {
         <table className="mypage-table">
           <thead>
             <tr>
-              <th>{t('MyPage_th_filename')}</th>
-              <th>{t('MyPage_th_analysis_date')}</th>
-              <th>{t('MyPage_th_file_type')}</th>
-              <th>{t('MyPage_th_status')}</th>
-              <th>{t('MyPage_th_manage')}</th> 
+              <th>{t('MyPage_th_filename', '대표 문서명')}</th>
+              <th>{t('MyPage_th_analysis_date', '분석 일시')}</th>
+              <th>{t('MyPage_th_doc_count', '관련 문서 수')}</th>
+              <th>{t('MyPage_th_result', '분석 결과')}</th>
+              <th>{t('MyPage_th_manage', '관리')}</th> 
             </tr>
           </thead>
           <tbody>
@@ -187,23 +180,28 @@ function MyPage() {
               <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>{t('MyPage_msg_loading')}</td></tr>
             ) : docsError ? (
               <tr><td colSpan="5" style={{ textAlign: 'center', color: 'red', padding: '20px' }}>{docsError}</td></tr>
-            ) : documents.length === 0 ? (
-              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>{t('MyPage_msg_no_docs')}</td></tr>
+            ) : analyses.length === 0 ? (
+              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>{t('MyPage_msg_no_analyses', '분석 기록이 없습니다.')}</td></tr>
             ) : (
-              documents.slice(0, 5).map(doc => (
-                <tr key={doc.documentId}>
-                  <td>{doc.fileName}</td>
-                  <td>{new Date(doc.createdAt).toLocaleDateString()}</td>
+              analyses.slice(0, 5).map(analysis => (
+                <tr key={analysis.analysisId}>
+                  <td>{analysis.representativeDocumentName}</td>
+                  <td>{new Date(analysis.createdAt).toLocaleDateString()}</td>
+                  <td>{analysis.documentCount}개</td>
                   <td>
-                    {doc.contentType && doc.contentType.includes('pdf') ? t('MyPage_type_pdf') : doc.contentType && doc.contentType.includes('image') ? t('MyPage_type_image') : t('MyPage_type_other')}
+                    <button 
+                      style={{ padding: '6px 12px', fontSize: '12px', color: '#ffffff', backgroundColor: '#4f46e5', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} 
+                      onClick={() => handleViewAnalysis(analysis.analysisId)}
+                    >
+                      {t('MyPage_btn_view_result', '결과 보기')}
+                    </button>
                   </td>
                   <td>
-                    <span className={`status-badge ${doc.status === 'UPLOADED' ? 'completed' : 'analyzing'}`} style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: 'bold', backgroundColor: doc.status === 'UPLOADED' ? '#e6f4ea' : '#fff3e0', color: doc.status === 'UPLOADED' ? '#1e8e3e' : '#f29900' }}>
-                      {doc.status === 'UPLOADED' ? t('MyPage_status_completed') : t('MyPage_status_analyzing')}
-                    </span>
-                  </td>
-                  <td>
-                    <button className="danger-btn" style={{ padding: '4px 12px', fontSize: '12px', color: '#dc3545', border: '1px solid #dc3545', background: 'white', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleDeleteDocument(doc.documentId)}>
+                    <button 
+                      className="danger-btn" 
+                      style={{ padding: '4px 12px', fontSize: '12px', color: '#dc3545', border: '1px solid #dc3545', background: 'white', borderRadius: '4px', cursor: 'pointer' }} 
+                      onClick={() => handleDeleteAnalysis(analysis.analysisId)}
+                    >
                       {t('MyPage_btn_delete')}
                     </button>
                   </td>
@@ -229,14 +227,13 @@ function MyPage() {
         </div>
       </section>
 
-      {/* 결제 모달 */}
       <PaymentModal isOpen={isPayModalOpen} onClose={() => setIsPayModalOpen(false)} onPaymentSuccess={handlePaymentSuccess} />
 
       <DocumentListModal 
         isOpen={isDocModalOpen} 
         onClose={() => setIsDocModalOpen(false)} 
-        documents={documents}
-        onDeleteDoc={handleDeleteDocument}
+        documents={analyses} 
+        onDeleteDoc={handleDeleteAnalysis}
       />
     </main>
   );
