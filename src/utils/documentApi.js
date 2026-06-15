@@ -4,25 +4,105 @@ function getAccessToken() {
   return localStorage.getItem("accessToken");
 }
 
+async function parseResponseBody(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("응답 JSON 파싱 실패:", error);
+    return text;
+  }
+}
+
 async function apiFetch(path, options = {}) {
   const token = getAccessToken();
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const headers = {
+    ...(options.headers || {}),
+  };
 
-  const data = await response.json();
-
-  if (!response.ok || data.isSuccess === false) {
-    throw new Error(data.message || "API 요청 실패");
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
-  // 백엔드 응답 규격이 { isSuccess, message, result: {...} } 형태이므로 result만 반환
-  return data.result;
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await parseResponseBody(response);
+
+  if (!response.ok) {
+    console.error("API 실패:", {
+      path,
+      status: response.status,
+      data,
+    });
+
+    const message =
+        data?.message ||
+        data?.error ||
+        `API 요청 실패: ${response.status}`;
+
+    throw new Error(message);
+  }
+
+  if (data?.isSuccess === false) {
+    throw new Error(data?.message || "API 요청 실패");
+  }
+
+  if (data && typeof data === "object" && "result" in data) {
+    return data.result;
+  }
+
+  return data;
+}
+
+function normalizeUploadInfos(uploadUrlResult) {
+  if (!uploadUrlResult) return [];
+
+  if (Array.isArray(uploadUrlResult)) {
+    return uploadUrlResult;
+  }
+
+  if (Array.isArray(uploadUrlResult.files)) {
+    return uploadUrlResult.files;
+  }
+
+  if (Array.isArray(uploadUrlResult.uploadInfos)) {
+    return uploadUrlResult.uploadInfos;
+  }
+
+  if (Array.isArray(uploadUrlResult.uploadUrls)) {
+    return uploadUrlResult.uploadUrls;
+  }
+
+  return [];
+}
+
+function normalizeReviewPayload(payloadOrDocumentGroups) {
+  if (
+      payloadOrDocumentGroups &&
+      typeof payloadOrDocumentGroups === "object" &&
+      Array.isArray(payloadOrDocumentGroups.documentGroups)
+  ) {
+    return payloadOrDocumentGroups;
+  }
+
+  if (Array.isArray(payloadOrDocumentGroups)) {
+    return {
+      documentGroups: payloadOrDocumentGroups,
+    };
+  }
+
+  return {
+    documentGroups: [],
+  };
 }
 
 export async function requestUploadUrls(files, documentType = "OTHER") {
@@ -42,9 +122,21 @@ export async function requestUploadUrls(files, documentType = "OTHER") {
 }
 
 export async function uploadFilesToS3(files, uploadInfos) {
+  if (!Array.isArray(uploadInfos) || uploadInfos.length === 0) {
+    throw new Error("S3 업로드 URL 정보를 찾을 수 없습니다.");
+  }
+
+  if (files.length !== uploadInfos.length) {
+    throw new Error("파일 개수와 업로드 URL 개수가 일치하지 않습니다.");
+  }
+
   await Promise.all(
       files.map(async (file, index) => {
         const uploadInfo = uploadInfos[index];
+
+        if (!uploadInfo?.uploadUrl) {
+          throw new Error(`${file.name} 업로드 URL이 없습니다.`);
+        }
 
         const response = await fetch(uploadInfo.uploadUrl, {
           method: "PUT",
@@ -71,7 +163,6 @@ export async function completeUploads(documentIds) {
   });
 }
 
-// 1. OCR 요청
 export async function requestOCR(documentIds) {
   return apiFetch("/api/documents/ocr", {
     method: "POST",
@@ -82,7 +173,6 @@ export async function requestOCR(documentIds) {
   });
 }
 
-// 2. 교차 검증 요청
 export async function requestCrossCheck(documentIds) {
   return apiFetch("/api/gemini/cross-check", {
     method: "POST",
@@ -93,76 +183,94 @@ export async function requestCrossCheck(documentIds) {
   });
 }
 
-// 3. 리뷰 데이터 조회 (USER_REVIEW_REQUIRED 상태일 때)
 export async function getReviewData(analysisId) {
   return apiFetch(`/api/gemini/${analysisId}/review`, {
     method: "GET",
   });
 }
 
-// 4. 리뷰 결과 제출 (사용자 확인/수정 후)
-export async function submitReviewData(analysisId, documentGroups) {
+export async function submitReviewData(analysisId, payloadOrDocumentGroups) {
+  const payload = normalizeReviewPayload(payloadOrDocumentGroups);
+
   return apiFetch(`/api/gemini/${analysisId}/review`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ documentGroups }),
+    body: JSON.stringify(payload),
   });
 }
 
-// 5. 최종 분석 요청 (READY_FOR_ANALYSIS 거나 리뷰 완료 후)
 export async function analyzeDocumentFinal(analysisId) {
   return apiFetch(`/api/gemini/${analysisId}/analyze`, {
     method: "POST",
   });
 }
 
-// 6. [NEW] 최종 분석 결과 조회 (GET)
 export async function getAnalysisResult(analysisId) {
   return apiFetch(`/api/analyses/${analysisId}`, {
     method: "GET",
   });
 }
 
-// [흐름 제어용 유틸] 업로드 ~ OCR ~ 교차검증까지 한 번에 진행
 export async function processDocumentsUpToCrossCheck(files) {
   const uploadUrlResult = await requestUploadUrls(files);
-  const uploadInfos = uploadUrlResult.files || uploadUrlResult;
-  await uploadFilesToS3(files, uploadInfos);
-  const documentIds = uploadInfos.map((info) => info.documentId);
-  await completeUploads(documentIds);
+  const uploadInfos = normalizeUploadInfos(uploadUrlResult);
 
+  if (uploadInfos.length === 0) {
+    throw new Error("업로드 URL 응답이 비어 있습니다.");
+  }
+
+  await uploadFilesToS3(files, uploadInfos);
+
+  const documentIds = uploadInfos
+      .map((info) => info.documentId)
+      .filter((id) => id !== null && id !== undefined);
+
+  if (documentIds.length === 0) {
+    throw new Error("documentId를 찾을 수 없습니다.");
+  }
+
+  await completeUploads(documentIds);
   await requestOCR(documentIds);
 
   const crossCheckResult = await requestCrossCheck(documentIds);
 
   return {
+    ...crossCheckResult,
     documentIds,
-    analysisId: crossCheckResult.analysisId,
-    status: crossCheckResult.status,
-    autoAnalysisAvailable: crossCheckResult.autoAnalysisAvailable,
+    analysisId: crossCheckResult?.analysisId,
+    status: crossCheckResult?.status,
+    autoAnalysisAvailable: crossCheckResult?.autoAnalysisAvailable,
+    userReviewRequired: crossCheckResult?.userReviewRequired,
+    recaptureRequired: crossCheckResult?.recaptureRequired,
   };
 }
 
-// 기타 기존 API들 유지
 export async function updateUserLanguageAPI(langCode) {
   const formattedLang = langCode.toUpperCase();
+
   return apiFetch("/api/user/language", {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ language: formattedLang }),
   });
 }
 
 export async function getUploadedDocuments() {
-  return apiFetch("/api/documents", { method: "GET" });
+  return apiFetch("/api/documents", {
+    method: "GET",
+  });
 }
 
 export async function deleteDocuments(documentIds) {
   return apiFetch("/api/documents", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ documentIds }),
   });
 }

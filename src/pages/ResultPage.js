@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useTranslation } from "react-i18next";
+import { getAnalysisResult } from "../utils/documentApi";
 
 function safeParseJson(value) {
     if (!value) return null;
@@ -26,39 +27,107 @@ function safeParseJson(value) {
     return value;
 }
 
+function hasAnalysisShape(value) {
+    return Boolean(
+        value?.문서검증 ||
+        value?.문서요약 ||
+        value?.공통추출항목 ||
+        value?.임금체불분석 ||
+        value?.최종판단
+    );
+}
+
 function extractAnalysisData(value) {
-    const parsedData = safeParseJson(value);
+    let current = safeParseJson(value);
 
-    if (!parsedData) return {};
+    for (let i = 0; i < 10; i++) {
+        current = safeParseJson(current);
 
-    if (parsedData?.문서요약) {
-        return parsedData;
-    }
+        if (!current || typeof current !== "object") break;
 
-    if (parsedData?.result?.문서요약) {
-        return parsedData.result;
-    }
+        if (hasAnalysisShape(current)) {
+            return current;
+        }
 
-    if (parsedData?.result?.result?.문서요약) {
-        return parsedData.result.result;
+        if (current.analysisResult) {
+            current = current.analysisResult;
+            continue;
+        }
+
+        if (current.result) {
+            current = current.result;
+            continue;
+        }
+
+        if (current.data) {
+            current = current.data;
+            continue;
+        }
+
+        break;
     }
 
     return {};
 }
 
+function extractDocumentIds(locationState, rawAnalysisResult) {
+    if (locationState?.documentIds?.length > 0) {
+        return locationState.documentIds;
+    }
+
+    if (rawAnalysisResult?.documentIds?.length > 0) {
+        return rawAnalysisResult.documentIds;
+    }
+
+    if (rawAnalysisResult?.result?.documentIds?.length > 0) {
+        return rawAnalysisResult.result.documentIds;
+    }
+
+    return [];
+}
+
 function ResultPage() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const params = useParams();
     const pdfRef = useRef();
     const { t } = useTranslation();
 
-    const documentIds = location.state?.documentIds;
-    const rawAnalysisResult = location.state?.analysisResult;
+    const analysisId = params.analysisId;
+    const stateAnalysisResult = location.state?.analysisResult;
 
-    if (!rawAnalysisResult) {
-        return <Navigate to="/analysis" replace />;
-    }
+    const [fetchedAnalysisResult, setFetchedAnalysisResult] = useState(null);
+    const [loading, setLoading] = useState(!stateAnalysisResult && Boolean(analysisId));
+    const [errorMessage, setErrorMessage] = useState("");
 
+    useEffect(() => {
+        if (stateAnalysisResult) return;
+
+        if (!analysisId) {
+            setErrorMessage("분석 결과를 찾을 수 없습니다.");
+            setLoading(false);
+            return;
+        }
+
+        const fetchResult = async () => {
+            try {
+                setLoading(true);
+                const result = await getAnalysisResult(analysisId);
+                setFetchedAnalysisResult(result);
+            } catch (error) {
+                console.error("분석 결과 조회 실패:", error);
+                setErrorMessage(error.message || "분석 결과를 불러오지 못했습니다.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResult();
+    }, [analysisId, stateAnalysisResult]);
+
+    const rawAnalysisResult = stateAnalysisResult || fetchedAnalysisResult;
     const data = extractAnalysisData(rawAnalysisResult);
+    const documentIds = extractDocumentIds(location.state, rawAnalysisResult);
 
     const formatCurrency = (amount) => {
         if (amount === null || amount === undefined || amount === "") {
@@ -69,12 +138,25 @@ function ResultPage() {
             return amount.toLocaleString() + t("ResultPage_currency_unit");
         }
 
-        return amount + t("ResultPage_currency_unit");
+        const text = String(amount);
+
+        if (text.includes("원") || text.toLowerCase().includes("krw")) {
+            return text;
+        }
+
+        return text + t("ResultPage_currency_unit");
     };
 
     const formatHour = (hour) => {
         if (hour === null || hour === undefined || hour === "") return "-";
-        return `${hour}시간`;
+
+        const text = String(hour);
+
+        if (text.includes("시간") || text.toLowerCase().includes("hour")) {
+            return text;
+        }
+
+        return `${text}시간`;
     };
 
     const getBadgeClass = (status) => {
@@ -112,9 +194,6 @@ function ResultPage() {
             s.includes("추가자료필요") ||
             s.includes("need") ||
             s.includes("warning") ||
-            s.includes("cần") ||
-            s.includes("trung bình") ||
-            s.includes("xác nhận") ||
             s.includes("undetermined")
         ) {
             return "badge-warning";
@@ -129,6 +208,11 @@ function ResultPage() {
         야간근로수당및휴업수당: t("ResultPage_map_night_shift"),
         초과근로수당휴일근로수당연차수당: t("ResultPage_map_overtime"),
     };
+
+    const hasPaymentSummary =
+        data?.공통추출항목?.총지급액 !== null &&
+        data?.공통추출항목?.총지급액 !== undefined &&
+        data?.공통추출항목?.총지급액 !== "";
 
     const handleDownloadPdf = async () => {
         const element = pdfRef.current;
@@ -159,37 +243,38 @@ function ResultPage() {
         }
     };
 
-    if (Object.keys(data).length === 0) {
+    if (loading) {
         return (
             <main className="page">
-                <section className="result-container" ref={pdfRef}>
-                    <header
-                        className="result-header"
+                <section className="result-container">
+                    <p>분석 결과를 불러오는 중입니다...</p>
+                </section>
+            </main>
+        );
+    }
+
+    if (errorMessage || Object.keys(data).length === 0) {
+        return (
+            <main className="page">
+                <section className="result-container">
+                    <h1>{t("ResultPage_h1_fallback")}</h1>
+                    <p>{errorMessage || "데이터를 불러올 수 없습니다. 분석 결과 형식을 확인해주세요."}</p>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate("/mypage")}
                         style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
+                            padding: "10px 18px",
+                            background: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            marginTop: "16px",
                         }}
                     >
-                        <h1>{t("ResultPage_h1_fallback")}</h1>
-
-                        <button
-                            className="pdf-btn"
-                            onClick={handleDownloadPdf}
-                            style={{
-                                padding: "8px 16px",
-                                background: "#3b82f6",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                            }}
-                        >
-                            {t("ResultPage_btn_pdf")}
-                        </button>
-                    </header>
-
-                    <pre>데이터를 불러올 수 없습니다. 분석 결과 형식을 확인해주세요.</pre>
+                        마이페이지로 돌아가기
+                    </button>
                 </section>
             </main>
         );
@@ -221,7 +306,7 @@ function ResultPage() {
                             {data?.문서요약?.확인된기간} {data?.문서요약?.사업장명}{" "}
                             {t("ResultPage_subtitle_analysis")}
 
-                            {documentIds && (
+                            {documentIds.length > 0 && (
                                 <span
                                     style={{
                                         fontSize: "12px",
@@ -246,6 +331,7 @@ function ResultPage() {
                     >
                         <button
                             className="pdf-btn"
+                            type="button"
                             onClick={handleDownloadPdf}
                             style={{
                                 padding: "8px 16px",
@@ -265,8 +351,7 @@ function ResultPage() {
                                 data?.최종판단?.임금체불가능성
                             )}`}
                         >
-              {data?.최종판단?.임금체불가능성 ||
-                  t("ResultPage_status_unknown")}
+              {data?.최종판단?.임금체불가능성 || t("ResultPage_status_unknown")}
             </span>
                     </div>
                 </header>
@@ -275,20 +360,41 @@ function ResultPage() {
                     <div className="summary-card">
                         <h3>{t("ResultPage_summary_salary")}</h3>
 
-                        <div className="amount-row">
-                            <span>시급</span>
-                            <strong>{formatCurrency(data?.공통추출항목?.시급)}</strong>
-                        </div>
+                        {hasPaymentSummary ? (
+                            <>
+                                <div className="amount-row">
+                                    <span>{t("ResultPage_total_payment")}</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.총지급액)}</strong>
+                                </div>
 
-                        <div className="amount-row highlight">
-                            <span>계약상 일급</span>
-                            <strong>{formatCurrency(data?.공통추출항목?.기본급)}</strong>
-                        </div>
+                                <div className="amount-row highlight">
+                                    <span>{t("ResultPage_net_pay")}</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.실수령액)}</strong>
+                                </div>
 
-                        <div className="amount-row muted">
-                            <span>일일 근로시간</span>
-                            <span>{formatHour(data?.공통추출항목?.일일근로시간)}</span>
-                        </div>
+                                <div className="amount-row muted">
+                                    <span>{t("ResultPage_deduction")}</span>
+                                    <span>{formatCurrency(data?.공통추출항목?.총공제액)}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="amount-row">
+                                    <span>시급</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.시급)}</strong>
+                                </div>
+
+                                <div className="amount-row highlight">
+                                    <span>계약상 일급</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.기본급)}</strong>
+                                </div>
+
+                                <div className="amount-row muted">
+                                    <span>일일 근로시간</span>
+                                    <span>{formatHour(data?.공통추출항목?.일일근로시간)}</span>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className="summary-card">
@@ -318,36 +424,33 @@ function ResultPage() {
                     </div>
                 </div>
 
-                {data?.임금체불분석 &&
-                    Object.keys(data.임금체불분석).length > 0 && (
-                        <section className="detail-section">
-                            <h2>{t("ResultPage_detail_analysis")}</h2>
+                {data?.임금체불분석 && Object.keys(data.임금체불분석).length > 0 && (
+                    <section className="detail-section">
+                        <h2>{t("ResultPage_detail_analysis")}</h2>
 
-                            <div className="analysis-list">
-                                {Object.entries(data.임금체불분석).map(([key, value]) => {
-                                    const status = value?.위반가능성 || value?.미지급가능성;
+                        <div className="analysis-list">
+                            {Object.entries(data.임금체불분석).map(([key, value]) => {
+                                const status = value?.위반가능성 || value?.미지급가능성;
 
-                                    return (
-                                        <div className="analysis-item" key={key}>
-                                            <div className="item-header">
-                                                <h4>{titleMap[key] || key}</h4>
+                                return (
+                                    <div className="analysis-item" key={key}>
+                                        <div className="item-header">
+                                            <h4>{titleMap[key] || key}</h4>
 
-                                                <span
-                                                    className={`small-badge ${getBadgeClass(status)}`}
-                                                >
-                          {status || t("ResultPage_judgment_unknown")}
-                        </span>
-                                            </div>
-
-                                            <p className="item-reason">
-                                                {value?.판단근거?.[0] || t("ResultPage_no_reason")}
-                                            </p>
+                                            <span className={`small-badge ${getBadgeClass(status)}`}>
+                        {status || t("ResultPage_judgment_unknown")}
+                      </span>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
+
+                                        <p className="item-reason">
+                                            {value?.판단근거?.[0] || t("ResultPage_no_reason")}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
 
                 {data?.최종판단 && (
                     <section className="ai-opinion-section">
@@ -371,7 +474,9 @@ function ResultPage() {
                             )}
 
                             <p className="warning-text">
-                                ※ {data?.최종판단?.주의문구 || t("ResultPage_warning_default")}
+                                ※{" "}
+                                {data?.최종판단?.주의문구 ||
+                                    "본 분석은 AI의 1차 검토 결과이며 법률적 판단이 아닙니다."}
                             </p>
                         </div>
                     </section>
