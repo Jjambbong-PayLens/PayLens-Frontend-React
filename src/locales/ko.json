@@ -95,6 +95,12 @@
 	"NewsPage_title_8": "외국인 종합지원센터 상담 우수 사례집",
 	"NewsPage_summary_8": "근로 현장에서 일어나는 갈등을 원만하게 해결한 실제 사례들입니다.",
 
+    "GlossaryPage_cat_salary" : "급여",
+    "GlossaryPage_cat_contract" : "계약",
+    "GlossaryPage_cat_work" : "근로",
+    "GlossaryPage_cat_insurance" : "보험",
+    "GlossaryPage_cat_tax" : "세금",
+
 	"GlossaryPage_def_1": "법으로 정한 노동자에 대한 임금의 최저 수준을 말하며, 국가가 노사간의 임금 결정과정에 개입하여 임금의 최저수준을 정하고 사용자가 이 수준 이상의 임금을 지급하도록 법으로 강제하는 제도입니다.",
 	"GlossaryPage_ex_1": "2026년 기준 법정 최저시급이 전 사업장에 적용되며, 이를 위반할 경우 3년 이하의 징역 또는 2천만원 이하의 벌금이 부과될 수 있습니다.",
 	"GlossaryPage_def_2": "직무수행 능력이나 직무의 기술, 책임, 연령, 근속성적 등을 기준으로 하여 근로자에게 기본적으로 지급하는 가산 수당을 제외한 가장 기본적인 계약 임금입니다.",

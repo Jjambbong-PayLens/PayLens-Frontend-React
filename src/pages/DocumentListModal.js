@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 function DocumentListModal({ isOpen, onClose, documents, onDeleteDoc }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
@@ -21,7 +23,8 @@ function DocumentListModal({ isOpen, onClose, documents, onDeleteDoc }) {
 
   const filteredDocs = useMemo(() => {
     return documents.filter(doc => {
-      const matchName = doc.fileName.toLowerCase().includes(searchName.toLowerCase());
+      const docName = doc.representativeDocumentName || '';
+      const matchName = docName.toLowerCase().includes(searchName.toLowerCase());
       
       let matchDate = true;
       if (searchDate) {
@@ -94,13 +97,13 @@ function DocumentListModal({ isOpen, onClose, documents, onDeleteDoc }) {
 
         <div style={{ marginBottom: '20px' }}>
           <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: '0 0 16px 0' }}>
-            {t('MyPage_doc_title')}
+            {t('MyPage_analysis_title', '내 분석 리포트 전체보기')}
           </h3>
           
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <input 
               type="text" 
-              placeholder={t('MyPage_search_name_placeholder', '문서명 검색')}
+              placeholder={t('MyPage_search_name_placeholder', '대표 문서명 검색')}
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', flex: 1, minWidth: '200px' }}
@@ -123,46 +126,45 @@ function DocumentListModal({ isOpen, onClose, documents, onDeleteDoc }) {
           <table className="mypage-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left', borderBottom: '2px solid #edf2f7' }}>
-                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_filename')}</th>
-                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_analysis_date')}</th>
-                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_file_type')}</th>
-                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_status')}</th>
-                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_manage')}</th> 
+                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_filename', '대표 문서명')}</th>
+                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_analysis_date', '분석 일시')}</th>
+                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_doc_count', '관련 문서 수')}</th>
+                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_result', '분석 결과')}</th>
+                <th style={{ padding: '12px 8px' }}>{t('MyPage_th_manage', '관리')}</th> 
               </tr>
             </thead>
             <tbody>
               {currentDocs.length === 0 ? (
                 <tr>
                   <td colSpan="5" style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>
-                    {t('MyPage_msg_no_docs_search', '조건에 맞는 문서가 없습니다.')}
+                    {t('MyPage_msg_no_docs_search', '조건에 맞는 분석 기록이 없습니다.')}
                   </td>
                 </tr>
               ) : (
                 currentDocs.map(doc => (
-                  <tr key={doc.documentId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                  <tr key={doc.analysisId} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: '14px 8px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {doc.fileName}
+                      {doc.representativeDocumentName}
                     </td>
                     <td style={{ padding: '14px 8px', color: '#475569' }}>
                       {new Date(doc.createdAt).toLocaleDateString()}
                     </td>
                     <td style={{ padding: '14px 8px', color: '#475569' }}>
-                      {doc.contentType && doc.contentType.includes('pdf') ? t('MyPage_type_pdf') : doc.contentType && doc.contentType.includes('image') ? t('MyPage_type_image') : t('MyPage_type_other')}
+                      {doc.documentCount}개
                     </td>
                     <td style={{ padding: '14px 8px' }}>
-                      <span className={`status-badge ${doc.status === 'UPLOADED' ? 'completed' : 'analyzing'}`} style={{
-                        padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: 'bold',
-                        backgroundColor: doc.status === 'UPLOADED' ? '#e6f4ea' : '#fff3e0',
-                        color: doc.status === 'UPLOADED' ? '#1e8e3e' : '#f29900'
-                      }}>
-                        {doc.status === 'UPLOADED' ? t('MyPage_status_completed') : t('MyPage_status_analyzing')}
-                      </span>
+                      <button 
+                        style={{ padding: '6px 12px', fontSize: '12px', color: '#ffffff', backgroundColor: '#4f46e5', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} 
+                        onClick={() => navigate(`/result/${doc.analysisId}`)}
+                      >
+                        {t('MyPage_btn_view_result', '결과 보기')}
+                      </button>
                     </td>
                     <td style={{ padding: '14px 8px' }}>
                       <button className="danger-btn" style={{ 
                         padding: '4px 12px', fontSize: '12px', color: '#dc3545', border: '1px solid #dc3545', 
                         background: 'white', borderRadius: '4px', cursor: 'pointer'
-                      }} onClick={() => onDeleteDoc(doc.documentId)}>
+                      }} onClick={() => onDeleteDoc(doc.analysisId)}>
                         {t('MyPage_btn_delete')}
                       </button>
                     </td>
@@ -174,17 +176,11 @@ function DocumentListModal({ isOpen, onClose, documents, onDeleteDoc }) {
         </div>
         
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          
           <div style={{ width: '80px' }}></div>
-          
           {filteredDocs.length > 0 && (
             <div style={{ display: 'flex', gap: '6px' }}>
-              <button className="page-btn" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
-                &lt;&lt;
-              </button>
-              <button className="page-btn" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-                &lt;
-              </button>
+              <button className="page-btn" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>&lt;&lt;</button>
+              <button className="page-btn" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>&lt;</button>
               
               {pages.map(page => (
                 <button 
@@ -196,21 +192,16 @@ function DocumentListModal({ isOpen, onClose, documents, onDeleteDoc }) {
                 </button>
               ))}
 
-              <button className="page-btn" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-                &gt;
-              </button>
-              <button className="page-btn" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
-                &gt;&gt;
-              </button>
+              <button className="page-btn" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>&gt;</button>
+              <button className="page-btn" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>&gt;&gt;</button>
             </div>
           )}
-
           <div style={{ width: '80px', textAlign: 'right' }}>
             <button onClick={onClose} style={{
               padding: '10px 20px', backgroundColor: '#f1f5f9', color: '#475569',
               border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
             }}>
-              {t('MyPage_btn_close')}
+              {t('MyPage_btn_close', '닫기')}
             </button>
           </div>
         </div>
