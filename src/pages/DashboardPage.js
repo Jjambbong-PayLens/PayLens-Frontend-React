@@ -1,20 +1,18 @@
-import React, { useState } from 'react'; // 1. useState 추가
-import { useNavigate, Link } from 'react-router-dom'; // 2. useNavigate 추가
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { getUser } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
-import api from '../utils/api'; // 3. api 추가
+import api from '../utils/api';
 
 function DashboardPage() {
   const user = getUser();
   const { t } = useTranslation();
-  const navigate = useNavigate(); // 4. navigate 훅 사용
-  const [isNavigating, setIsNavigating] = useState(false); // 5. 로딩 상태 관리
+  const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  // 🌟 [핵심] 가장 최근 리포트를 가져와 이동하는 함수
   const handleViewLatestAnalysis = async () => {
     try {
       setIsNavigating(true);
-      // 1. 모든 분석 리포트 목록을 조회
       const response = await api.get('/api/analyses');
       const analyses = response.data.result || [];
 
@@ -23,15 +21,12 @@ function DashboardPage() {
         return;
       }
 
-      // 2. 생성일자(createdAt) 기준 내림차순 정렬하여 가장 최근 항목 선택
       const latestAnalysis = [...analyses].sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       )[0];
 
-      // 3. 해당 ID의 상세 정보 조회
       const detailResponse = await api.get(`/api/analyses/${latestAnalysis.analysisId}`);
       
-      // 4. ResultPage로 데이터 전달하며 이동
       navigate(`/result/${latestAnalysis.analysisId}`, { 
         state: { analysisResult: detailResponse.data.result.result || detailResponse.data.result } 
       });
@@ -51,7 +46,6 @@ function DashboardPage() {
       <div className="button-row">
         <Link className="primary-link" to="/preanalysis">{t('DashboardPage_btn-start')}</Link>
         
-        {/* 🌟 [수정] Link 대신 버튼을 사용하여 함수 호출 */}
         <button 
           className="secondary-link" 
           onClick={handleViewLatestAnalysis}

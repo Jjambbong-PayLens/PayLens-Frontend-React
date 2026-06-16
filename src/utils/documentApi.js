@@ -274,3 +274,64 @@ export async function deleteDocuments(documentIds) {
     body: JSON.stringify({ documentIds }),
   });
 }
+// ==========================================
+// 공지사항(Notice) 관련 API 연동
+// ==========================================
+
+/**
+ * 공지사항 목록 조회 (GET)
+ */
+export async function getNotices() {
+  return apiFetch("/api/notices", {
+    method: "GET",
+  });
+}
+
+/**
+ * 공지사항 상세 조회 (GET)
+ * @param {number|string} noticeId - 조회할 공지사항 ID
+ */
+export async function getNoticeDetail(noticeId) {
+  return apiFetch(`/api/notices/${noticeId}`, {
+    method: "GET",
+  });
+}
+
+/**
+ * 공지사항 등록 (POST) - 관리자용
+ * @param {Object} noticeData - { title, content, thumbnailUrl, category }
+ */
+export async function createNotice(noticeData) {
+  return apiFetch("/api/notices", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(noticeData),
+  });
+}
+
+/**
+ * 공지사항 수정 (PUT) - 관리자용
+ * @param {number|string} noticeId - 수정할 공지사항 ID
+ * @param {Object} noticeData - { title, content, thumbnailUrl, category }
+ */
+export async function updateNotice(noticeId, noticeData) {
+  return apiFetch(`/api/notices/${noticeId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(noticeData),
+  });
+}
+
+/**
+ * 공지사항 삭제 (DELETE) - 관리자용
+ * @param {number|string} noticeId - 삭제할 공지사항 ID
+ */
+export async function deleteNotice(noticeId) {
+  return apiFetch(`/api/notices/${noticeId}`, {
+    method: "DELETE",
+  });
+}

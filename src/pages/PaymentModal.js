@@ -96,11 +96,11 @@ function PaymentModal({ isOpen, onClose, onPaymentSuccess }) {
         }
         @keyframes slideUp {
           from {
-            transform: translateY(100px);
+            transform: translateY(100px); /* 🌟 아래에서 100px 밑에서 시작 */
             opacity: 0;
           }
           to {
-            transform: translateY(0);
+            transform: translateY(0); /* 원래 위치로 쏙 */
             opacity: 1;
           }
         }

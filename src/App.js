@@ -13,7 +13,8 @@ import ResultPage from "./pages/ResultPage";
 import ReviewPage from "./pages/ReviewPage";
 import MyPage from "./pages/MyPage";
 import PreAnalysisPage from "./pages/PreAnalysisPage";
-import News from "./pages/NewsPage";
+import Notice from "./pages/NoticePage";
+import NoticeDetailPage from './pages/NoticeDetailPage';
 import Glossary from "./pages/GlossaryPage";
 
 import "./i18n";
@@ -25,7 +26,8 @@ function App() {
                 <Route path="/" element={<MainPage />} />
                 <Route path="/pricing" element={<PricePage />} />
                 <Route path="/explain" element={<ExplainPage />} />
-                <Route path="/news" element={<News />} />
+                <Route path="/notice" element={<Notice />} />
+                <Route path="/notice/:noticeId" element={<NoticeDetailPage />} />
                 <Route path="/glossary" element={<Glossary />} />
             </Route>
 

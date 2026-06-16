@@ -13,7 +13,7 @@ function LanguageSelector() {
           language: newLang
         },
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}` // 자물쇠 아이콘(Authorize) 처리를 위한 토큰
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
 
