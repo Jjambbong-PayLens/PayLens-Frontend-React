@@ -2,14 +2,14 @@
 	"MainLayout_nav1": "플랜 비교",
 	"MainLayout_nav2": "기능 설명",
 	"MainLayout_nav3": "더보기",
-	"MainLayout_news": "뉴스",
+	"MainLayout_notice": "공지사항",
 	"MainLayout_glossary": "용어 사전",
 	"MainLayout_home": "홈",
 	"MainLayout_login": "로그인",
 	"MainLayout_logout": "로그아웃",
 
 	"MainDropdown_more": "더보기",
-	"MainDropdown_news": "뉴스",
+	"MainDropdown_notice": "공지사항",
 	"MainDropdown_glossary": "용어 사전",
 	
 
@@ -18,8 +18,8 @@
     "MainPage_button": "지금 탐지하기",
     "MainPage_feature-title": "강력한 이상 탐지 서비스",
     "MainPage_feature-desc": "전문가들도 사용하는 강력한 외국인 임금 이상 탐지 기능",
-	"MainPage_news-title": "최신 노동 정책 및 뉴스",
-	"MainPage_news-subtitle": "근로자와 고용주 모두에게 꼭 필요한 최신 정보를 확인하세요.",
+	"MainPage_notice-title": "최신 노동 정책 및 공지사항",
+	"MainPage_notice-subtitle": "근로자와 고용주 모두에게 꼭 필요한 최신 정보를 확인하세요.",
 
 	"PricePage_title": "플랜 및 가격",
 	"PricePage_subtitle": "합리적인 Abnormal Processing 플랜을 제공합니다",

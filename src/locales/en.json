@@ -2,14 +2,14 @@
 	"MainLayout_nav1": "Plan Comparison",
 	"MainLayout_nav2": "Feature Guide",
 	"MainLayout_nav3": "More",
-    "MainLayout_news": "News",
+    "MainLayout_notice": "Notice",
     "MainLayout_glossary": "Glossary",
     "MainLayout_home": "Home",
     "MainLayout_login": "Login",
     "MainLayout_logout": "Logout",
 
     "MainDropdown_more": "More",
-    "MainDropdown_news": "News",
+    "MainDropdown_notice": "Notice",
     "MainDropdown_glossary": "Glossary",
 
 	"MainPage_subtitle": "Foreign Worker Wages",
@@ -17,8 +17,8 @@
     "MainPage_button": "Detect Now",
     "MainPage_feature-title": "Powerful Anomaly Detection Service",
     "MainPage_feature-desc": "Powerful foreign worker wage anomaly detection feature used by experts",
-	"MainPage_news-title": "Latest Labor Policies and News",
-	"MainPage_news-subtitle": "Check the latest information you need as both workers and employers.",
+	"MainPage_notice-title": "Latest Labor Policies and Notice",
+	"MainPage_notice-subtitle": "Check the latest information you need as both workers and employers.",
 
 	"PricePage_title": "Plan and Pricing",
 	"PricePage_subtitle": "We provide a reasonable Abnormal Processing plan",
