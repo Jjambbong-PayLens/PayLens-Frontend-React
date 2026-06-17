@@ -170,8 +170,8 @@ function PaymentModal({ isOpen, onClose, onPaymentSuccess }) {
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px dashed #cbd5e1' }}>
-            <span style={{ color: '#64748b', fontSize: '14px' }}>결제 주기</span>
-            <span style={{ color: '#334155', fontSize: '14px', fontWeight: '600' }}>매월 자동결제</span>
+            <span style={{ color: '#64748b', fontSize: '14px' }}>{t('PaymentPage_payment_period')}</span>
+            <span style={{ color: '#334155', fontSize: '14px', fontWeight: '600' }}>{t('PaymentPage_payment_permonth')}</span>
           </div>
         </div>
         
