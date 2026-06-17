@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
 import PaymentModal from './PaymentModal';
 import DocumentListModal from './DocumentListModal';
+import AdminLaborModal from './AdminLaborModal';
 
 function MyPage() {
   const { t, i18n } = useTranslation();
@@ -20,14 +21,16 @@ function MyPage() {
   const [analyses, setAnalyses] = useState([]);
   const [isDocsLoading, setIsDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(true); 
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false); 
-
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  
   const totalCount = analyses.length;
   const currentMonth = new Date().getMonth();
   const newThisMonthCount = analyses.filter(a => new Date(a.createdAt).getMonth() === currentMonth).length;
-  
+
   const fetchAnalyses = useCallback(async () => {
     try {
       setIsDocsLoading(true);
@@ -129,6 +132,40 @@ function MyPage() {
         </div>
       </section>
 
+        {isAdmin && (
+        <section className="card admin-section" style={{ 
+          marginTop: '24px', 
+          border: '2px solid #877dde', 
+          backgroundColor: '#faf5ff' 
+        }}>
+          <div className="section-header">
+            <h3 style={{ color: '#695cc7' }}>👑 관리자 전용 메뉴</h3>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
+            <div>
+              <strong style={{ fontSize: '16px', color: '#1e293b' }}>노무사 등업 신청 관리</strong>
+              <p style={{ fontSize: '14px', color: '#64748b', margin: '4px 0 0 0' }}>
+                대기 중인 유저의 노무사 자격 증명서를 확인하고 가입을 승인하거나 거절합니다.
+              </p>
+            </div>
+            <button 
+              style={{ 
+                padding: '12px 24px', 
+                backgroundColor: '#877dde', 
+                color: '#ffffff', 
+                border: 'none', 
+                borderRadius: '8px', 
+                fontSize: '14px', 
+                fontWeight: 'bold', 
+                cursor: 'pointer' 
+              }}
+              onClick={() => setIsAdminModalOpen(true)}
+            >
+              가입 신청 목록 조회
+            </button>
+          </div>
+        </section>
+      )}
       <section className="card membership-section" style={{
         marginTop: '24px', padding: '28px 24px', borderRadius: '16px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px'
@@ -144,7 +181,6 @@ function MyPage() {
             {userInfo.isSubscribed ? t('MyPage_membership_desc_active') : t('MyPage_membership_desc_inactive')}
           </p>
         </div>
-
         {!userInfo.isSubscribed ? (
           <button type="button" onClick={() => setIsPayModalOpen(true)} style={{
             padding: '12px 20px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 6px rgba(15, 23, 42, 0.08)'
@@ -235,6 +271,7 @@ function MyPage() {
         documents={analyses} 
         onDeleteDoc={handleDeleteAnalysis}
       />
+      <AdminLaborModal isOpen={isAdminModalOpen} onClose={() => setIsAdminModalOpen(false)} />
     </main>
   );
 }

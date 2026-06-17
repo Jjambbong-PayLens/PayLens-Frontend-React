@@ -12,6 +12,7 @@ import LoadingPage from "./pages/LoadingPage";
 import ResultPage from "./pages/ResultPage";
 import ReviewPage from "./pages/ReviewPage";
 import MyPage from "./pages/MyPage";
+import ExpertFinder from "./pages/ExpertFinder"
 import PreAnalysisPage from "./pages/PreAnalysisPage";
 import Notice from "./pages/NoticePage";
 import NoticeDetailPage from './pages/NoticeDetailPage';
@@ -44,8 +45,8 @@ function App() {
                     <Route path="/result/:analysisId" element={<ResultPage />} />
                     <Route path="/review" element={<ReviewPage />} />
                     <Route path="/review/:analysisId" element={<ReviewPage />} />
-
                     <Route path="/mypage" element={<MyPage />} />
+                    <Route path="/expfinder" element={<ExpertFinder />} />
                     <Route path="/preanalysis" element={<PreAnalysisPage />} />
                 </Route>
             </Route>

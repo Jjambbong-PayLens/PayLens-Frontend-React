@@ -32,6 +32,7 @@ function Layout() {
           <NavLink to="/preanalysis">{t('layout_preanalysis')}</NavLink>
           <NavLink to="/analysis">{t('layout_analysis')}</NavLink>
           <NavLink to="/mypage">{t('layout_mypage')}</NavLink>
+          <NavLink to="/expfinder">전문가 찾기</NavLink>
         </nav>
       </aside>
 

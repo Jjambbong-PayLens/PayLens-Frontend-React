@@ -335,3 +335,93 @@ export async function deleteNotice(noticeId) {
     method: "DELETE",
   });
 }
+export async function applyLaborRole() {
+  return apiFetch("/api/user/labor/apply", {
+    method: "POST",
+  });
+}
+
+/**
+ * 2. [관리자] 노무사 권한 승인 (POST)
+ * @param {number|string} userId - 승인할 유저의 ID
+ */
+export async function approveLaborRole(userId) {
+  return apiFetch(`/api/admin/labor/${userId}/approve`, {
+    method: "POST",
+  });
+}
+
+/**
+ * 3. [관리자] 노무사 권한 거절 (POST)
+ * @param {number|string} userId - 거절할 유저의 ID
+ */
+export async function rejectLaborRole(userId) {
+  return apiFetch(`/api/admin/labor/${userId}/reject`, {
+    method: "POST",
+  });
+}
+
+/**
+ * 4. [공통] 노무사 전체 목록 조회 (GET)
+ * - 전문가 찾기 탭에서 사용
+ */
+export async function getLabors() {
+  return apiFetch("/api/labor", {
+    method: "GET",
+  });
+}
+
+/**
+ * 5. [공통] 노무사 단건 상세 조회 (GET)
+ * - 전문가 카드 클릭 시 사용
+ * @param {number|string} laborId - 노무사 프로필 ID
+ */
+export async function getLaborDetail(laborId) {
+  return apiFetch(`/api/labor/${laborId}`, {
+    method: "GET",
+  });
+}
+
+/**
+ * 6. [노무사 유저] 전문가 프로필 최초 등록 (POST)
+ * @param {Object} profileData - { company, description, name, profileImageUrl, region, specialties, title }
+ */
+export async function createLaborProfile(profileData) {
+  return apiFetch("/api/labor", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(profileData),
+  });
+}
+
+/**
+ * 7. [노무사 유저] 전문가 프로필 수정 (PUT)
+ * @param {number|string} laborId - 수정할 노무사 프로필 ID
+ * @param {Object} profileData - { company, description, name, profileImageUrl, region, specialties, title }
+ */
+export async function updateLaborProfile(laborId, profileData) {
+  return apiFetch(`/api/labor/${laborId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(profileData),
+  });
+}
+
+/**
+ * 8. [노무사 유저] 전문가 프로필 삭제 (DELETE)
+ * @param {number|string} laborId - 삭제할 노무사 프로필 ID
+ */
+export async function deleteLaborProfile(laborId) {
+  return apiFetch(`/api/labor/${laborId}`, {
+    method: "DELETE",
+  });
+}
+export async function getPendingLabors() {
+  return apiFetch("/api/user/labor/pending", {
+    method: "GET",
+  });
+}
