@@ -1,259 +1,489 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useParams, useLocation, Navigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useTranslation } from 'react-i18next';
-import api from '../utils/api';
+import { useTranslation } from "react-i18next";
+import { getAnalysisResult } from "../utils/documentApi";
 
 function safeParseJson(value) {
-  if (!value) return null;
-  let targetValue = value;
-  if (typeof value === "object" && value.result) targetValue = value.result;
-  if (typeof targetValue === "object") return targetValue;
-  
-  let cleanValue = targetValue;
-  if (typeof targetValue === "string") {
-    cleanValue = targetValue.replace(/```json/gi, "").replace(/```/g, "").trim();
-  }
-  try {
-    return JSON.parse(cleanValue);
-  } catch (error) {
-    return targetValue;
-  }
+    if (!value) return null;
+
+    if (typeof value === "object") return value;
+
+    if (typeof value === "string") {
+        const cleanValue = value
+            .replace(/```json/gi, "")
+            .replace(/```/g, "")
+            .trim();
+
+        try {
+            return JSON.parse(cleanValue);
+        } catch (error) {
+            console.error("JSON 파싱 에러:", error);
+            return value;
+        }
+    }
+
+    return value;
+}
+
+function hasAnalysisShape(value) {
+    return Boolean(
+        value?.문서검증 ||
+        value?.문서요약 ||
+        value?.공통추출항목 ||
+        value?.임금체불분석 ||
+        value?.최종판단
+    );
+}
+
+function extractAnalysisData(value) {
+    let current = safeParseJson(value);
+
+    for (let i = 0; i < 10; i++) {
+        current = safeParseJson(current);
+
+        if (!current || typeof current !== "object") break;
+
+        if (hasAnalysisShape(current)) {
+            return current;
+        }
+
+        if (current.analysisResult) {
+            current = current.analysisResult;
+            continue;
+        }
+
+        if (current.result) {
+            current = current.result;
+            continue;
+        }
+
+        if (current.data) {
+            current = current.data;
+            continue;
+        }
+
+        break;
+    }
+
+    return {};
+}
+
+function extractDocumentIds(locationState, rawAnalysisResult) {
+    if (locationState?.documentIds?.length > 0) {
+        return locationState.documentIds;
+    }
+
+    if (rawAnalysisResult?.documentIds?.length > 0) {
+        return rawAnalysisResult.documentIds;
+    }
+
+    if (rawAnalysisResult?.result?.documentIds?.length > 0) {
+        return rawAnalysisResult.result.documentIds;
+    }
+
+    return [];
 }
 
 function ResultPage() {
-  const { analysisId } = useParams();
-  const location = useLocation();
-  const pdfRef = useRef();
-  const { t } = useTranslation();
-  const [loading, setLoading] = useState(!location.state?.analysisResult);
-  const [rawAnalysisResult, setRawAnalysisResult] = useState(location.state?.analysisResult || null);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const params = useParams();
+    const pdfRef = useRef();
+    const { t } = useTranslation();
 
-  const [selectedKey] = useState(null);  
+    const analysisId = params.analysisId;
+    const stateAnalysisResult = location.state?.analysisResult;
 
-  useEffect(() => {
-    if (rawAnalysisResult) {
-      setLoading(false);
-      return;
-    }
-    const fetchData = async () => {
-      if (!analysisId) { setLoading(false); return; }
-      try {
-        const response = await api.get(`/api/analyses/${analysisId}`);
-        const resData = response.data.result;
-        if (resData) {
-          if (typeof resData === 'string') setRawAnalysisResult(resData);
-          else if (resData.result) setRawAnalysisResult(resData.result);
-          else setRawAnalysisResult(JSON.stringify(resData));
+    const [fetchedAnalysisResult, setFetchedAnalysisResult] = useState(null);
+    const [loading, setLoading] = useState(!stateAnalysisResult && Boolean(analysisId));
+    const [errorMessage, setErrorMessage] = useState("");
+
+    useEffect(() => {
+        if (stateAnalysisResult) return;
+
+        if (!analysisId) {
+            setErrorMessage("분석 결과를 찾을 수 없습니다.");
+            setLoading(false);
+            return;
         }
-      } catch (error) {
-        console.error("데이터 로드 실패", error);
-      } finally {
-        setLoading(false);
-      }
+
+        const fetchResult = async () => {
+            try {
+                setLoading(true);
+                const result = await getAnalysisResult(analysisId);
+                setFetchedAnalysisResult(result);
+            } catch (error) {
+                console.error("분석 결과 조회 실패:", error);
+                setErrorMessage(error.message || "분석 결과를 불러오지 못했습니다.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResult();
+    }, [analysisId, stateAnalysisResult]);
+
+    const rawAnalysisResult = stateAnalysisResult || fetchedAnalysisResult;
+    const data = extractAnalysisData(rawAnalysisResult);
+    const documentIds = extractDocumentIds(location.state, rawAnalysisResult);
+
+    const formatCurrency = (amount) => {
+        if (amount === null || amount === undefined || amount === "") {
+            return `- ${t("ResultPage_currency_unit")}`;
+        }
+
+        if (typeof amount === "number") {
+            return amount.toLocaleString() + t("ResultPage_currency_unit");
+        }
+
+        const text = String(amount);
+
+        if (text.includes("원") || text.toLowerCase().includes("krw")) {
+            return text;
+        }
+
+        return text + t("ResultPage_currency_unit");
     };
-    fetchData();
-  }, [analysisId, rawAnalysisResult]);
 
-  if (loading) return <div>{t('ResultPage_loading', '분석 결과를 불러오는 중입니다...')}</div>;
+    const formatHour = (hour) => {
+        if (hour === null || hour === undefined || hour === "") return "-";
 
-  const data = safeParseJson(rawAnalysisResult);
-  if (!rawAnalysisResult || !data) return <Navigate to="/analysis" replace/>;
+        const text = String(hour);
 
-  const handleDownloadPdf = async () => {
-    const element = pdfRef.current;
-    const btn = element.querySelector('.pdf-btn');
-    if(btn) btn.style.display = 'none';
+        if (text.includes("시간") || text.toLowerCase().includes("hour")) {
+            return text;
+        }
 
-    try {
-      const canvas = await html2canvas(element, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      
-      const fileNamePrefix = t('ResultPage_pdf_prefix');
-      const userName = data.문서요약?.근로자명 || t('ResultPage_anonymous');
-      pdf.save(`${fileNamePrefix}_${userName}.pdf`);
-    } catch (error) {
-      alert(t('ResultPage_alert_pdf_error'));
-    } finally {
-      if(btn) btn.style.display = 'block';
+        return `${text}시간`;
+    };
+
+    const getBadgeClass = (status) => {
+        if (!status) return "badge-neutral";
+
+        const s = String(status).toLowerCase();
+
+        if (
+            s.includes("낮음") ||
+            s.includes("low") ||
+            s.includes("safe") ||
+            s.includes("안전") ||
+            s.includes("not applicable") ||
+            s.includes("없음")
+        ) {
+            return "badge-safe";
+        }
+
+        if (
+            s.includes("높음") ||
+            s.includes("high") ||
+            s.includes("risk") ||
+            s.includes("위험") ||
+            s.includes("cao")
+        ) {
+            return "badge-danger";
+        }
+
+        if (
+            s.includes("possible") ||
+            s.includes("moderate") ||
+            s.includes("medium") ||
+            s.includes("보통") ||
+            s.includes("중간") ||
+            s.includes("추가자료필요") ||
+            s.includes("need") ||
+            s.includes("warning") ||
+            s.includes("undetermined")
+        ) {
+            return "badge-warning";
+        }
+
+        return "badge-neutral";
+    };
+
+    const titleMap = {
+        최저임금및주휴수당: t("ResultPage_map_minimum_wage"),
+        퇴직금미지급: t("ResultPage_map_severance_pay"),
+        야간근로수당및휴업수당: t("ResultPage_map_night_shift"),
+        초과근로수당휴일근로수당연차수당: t("ResultPage_map_overtime"),
+    };
+
+    const hasPaymentSummary =
+        data?.공통추출항목?.총지급액 !== null &&
+        data?.공통추출항목?.총지급액 !== undefined &&
+        data?.공통추출항목?.총지급액 !== "";
+
+    const handleDownloadPdf = async () => {
+        const element = pdfRef.current;
+        if (!element) return;
+
+        const btn = element.querySelector(".pdf-btn");
+        if (btn) btn.style.display = "none";
+
+        try {
+            const canvas = await html2canvas(element, { scale: 2 });
+            const imgData = canvas.toDataURL("image/png");
+
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+            const fileNamePrefix = t("ResultPage_pdf_prefix");
+            const userName = data?.문서요약?.근로자명 || t("ResultPage_anonymous");
+
+            pdf.save(`${fileNamePrefix}_${userName}.pdf`);
+        } catch (error) {
+            console.error("PDF 생성 실패:", error);
+            alert(t("ResultPage_alert_pdf_error"));
+        } finally {
+            if (btn) btn.style.display = "block";
+        }
+    };
+
+    if (loading) {
+        return (
+            <main className="page">
+                <section className="result-container">
+                    <p>분석 결과를 불러오는 중입니다...</p>
+                </section>
+            </main>
+        );
     }
-  };
 
-  if (typeof data === "string") {
+    if (errorMessage || Object.keys(data).length === 0) {
+        return (
+            <main className="page">
+                <section className="result-container">
+                    <h1>{t("ResultPage_h1_fallback")}</h1>
+                    <p>{errorMessage || "데이터를 불러올 수 없습니다. 분석 결과 형식을 확인해주세요."}</p>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate("/mypage")}
+                        style={{
+                            padding: "10px 18px",
+                            background: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            marginTop: "16px",
+                        }}
+                    >
+                        마이페이지로 돌아가기
+                    </button>
+                </section>
+            </main>
+        );
+    }
+
     return (
-      <main className="page">
-        <section className="result-container" ref={pdfRef}>
-          <header className="result-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1>{t('ResultPage_h1_fallback')}</h1>
-            <button className="pdf-btn" onClick={handleDownloadPdf} style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              {t('ResultPage_btn_pdf')}
-            </button>
-          </header>
-          <pre>{data}</pre>
-        </section>
-      </main>
-    );
-  }
-
-  const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return `- ${t('ResultPage_currency_unit')}`;
-    return amount.toLocaleString() + t('ResultPage_currency_unit');
-  };
-
-  const getBadgeClass = (status) => {
-    if (!status) return "badge-neutral";
-    const s = status.toLowerCase();
-    if (s.includes("낮음") || s.includes("low") || s.includes("safe")) return "badge-safe";
-    if (s.includes("높음") || s.includes("high") || s.includes("risk")) return "badge-danger";
-    return "badge-warning";
-  };
-
-  const titleMap = {
-    "최저임금및주휴수당": t('ResultPage_map_minimum_wage'),
-    "퇴직금미지급": t('ResultPage_map_severance_pay'),
-    "야간근로수당및휴업수당": t('ResultPage_map_night_shift'),
-    "초과근로수당휴일근로수당연차수당": t('ResultPage_map_overtime')
-  };
-
-  return (
-    <main className="page" style={{ display: 'flex', gap: '24px', padding: '24px', maxWidth: '1600px', margin: '0 auto' }}>
-      
-      <style>{`
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .evidence-animate-fade { animation: fadeInUp 0.3s ease-out forwards; }
-        
-        .citation-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          margin-left: 6px;
-          padding: 0 5px;
-          font-size: 11px;
-          font-weight: 700;
-          color: #64748b;
-          background-color: #f1f5f9;
-          border-radius: 4px;
-          cursor: help;
-          vertical-align: super;
-          border: 1px solid #e2e8f0;
-          user-select: none;
-          transition: all 0.2s ease;
-        }
-        .citation-badge:hover {
-          background-color: #4f46e5;
-          color: #ffffff;
-          border-color: #4f46e5;
-        }
-      `}</style>
-      
-      <div className="result-container" ref={pdfRef} style={{ flex: 1.2, background: 'white', padding: '28px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-        <header className="result-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0' }}>{t('ResultPage_h1_detail')}</h1>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
-              {data.문서요약?.확인된기간} {data.문서요약?.사업장명} {t('ResultPage_subtitle_analysis')}
-            </p>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-            <button className="pdf-btn" onClick={handleDownloadPdf} style={{ padding: '8px 16px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-              {t('ResultPage_btn_pdf')}
-            </button>
-            <span className={`status-badge ${getBadgeClass(data.최종판단?.임금체불가능성)}`}>
-              {data.최종판단?.임금체불가능성?.split(" ")[0] || t('ResultPage_status_unknown')}
-            </span>
-          </div>
-        </header>
-
-        <div className="summary-grid" style={{ marginBottom: '24px' }}>
-          <div className="summary-card">
-            <h3>{t('ResultPage_summary_salary')}</h3>
-            <div className="amount-row">
-              <span>{t('ResultPage_total_payment')}</span>
-              <strong>{formatCurrency(data.공통추출항목?.총지급액)}</strong>
-            </div>
-            <div className="amount-row highlight">
-              <span>{t('ResultPage_net_pay')}</span>
-              <strong>{formatCurrency(data.공통추출항목?.실수령액)}</strong>
-            </div>
-            <div className="amount-row muted">
-              <span>{t('ResultPage_deduction')}</span>
-              <span>{formatCurrency(data.공통추출항목?.총공제액)}</span>
-            </div>
-          </div>
-
-          <div className="summary-card">
-            <h3>{t('ResultPage_doc_info')}</h3>
-            <ul className="info-list">
-              <li><span>{t('ResultPage_worker_name')}</span> <strong>{data.문서요약?.근로자명 || "-"}</strong></li>
-              <li><span>{t('ResultPage_doc_type')}</span> <strong>{data.문서요약?.문서유형 || "-"}</strong></li>
-              <li><span>{t('ResultPage_doc_validity')}</span> <strong>{data.문서검증?.문서적합도 || "-"}</strong></li>
-              <li><span>{t('ResultPage_pay_date')}</span> <strong>{data.공통추출항목?.급여지급일 || "-"}</strong></li>
-            </ul>
-          </div>
-        </div>
-
-        {data.임금체불분석 && Object.keys(data.임금체불분석).length > 0 && (
-          <section className="detail-section" style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px' }}>{t('ResultPage_detail_analysis')}</h2>
-            <div className="analysis-list">
-              {Object.entries(data.임금체불분석).map(([key, value]) => {
-                const displayTitle = titleMap[key] || key;
-                const isSelected = selectedKey === key;
-                return (
-                  <div 
-                    className="analysis-item" 
-                    key={key} 
-                    style={{ 
-                      padding: '16px', 
-                      border: isSelected ? '2px solid #4f46e5' : '1px solid #e2e8f0', 
-                      borderRadius: '12px', 
-                      marginBottom: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      backgroundColor: isSelected ? '#f8fafc' : 'transparent',
-                      boxShadow: isSelected ? '0 4px 12px rgba(79, 70, 229, 0.05)' : 'none'
+        <main className="page">
+            <div
+                className="result-container"
+                ref={pdfRef}
+                style={{
+                    background: "white",
+                    padding: "20px",
+                    borderRadius: "8px",
+                }}
+            >
+                <header
+                    className="result-header"
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
                     }}
-                  >
-                    <div className="item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <h4 style={{ margin: 0, fontSize: '15px', color: isSelected ? '#4f46e5' : '#0f172a', fontWeight: isSelected ? '700' : '600' }}>{displayTitle}</h4>
-                      <span className={`small-badge ${getBadgeClass(value.위반가능성 || value.미지급가능성)}`}>
-                        {value.위반가능성 || value.미지급가능성 || t('ResultPage_judgment_unknown')}
-                      </span>
-                    </div>
-                    <p className="item-reason" style={{ margin: 0, fontSize: '14px', color: '#475569' }}>{value.판단근거?.[0] || t('ResultPage_no_reason')}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                >
+                    <div>
+                        <h1>{t("ResultPage_h1_detail")}</h1>
 
-        {data.최종판단 && (
-          <section className="ai-opinion-section">
-            <h2 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px' }}>🤖 {t('ResultPage_ai_opinion')}</h2>
-            <div className="opinion-box" style={{ padding: '20px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <p className="opinion-desc" style={{ margin: '0 0 16px 0', lineHeight: '1.6' }}>{data.최종판단.사용자에게보여줄설명}</p>
-              {data.최종판단.추가로필요한자료?.length > 0 && (
-                <div className="needed-docs" style={{ marginBottom: '16px', padding: '14px', backgroundColor: '#fff3e0', borderRadius: '8px' }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: '#e65100', fontSize: '14px' }}>⚠️ {t('ResultPage_needed_docs')}</h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#e65100' }}>
-                    {data.최종판단.추가로필요한자료.map((doc, idx) => <li key={idx}>{doc}</li>)}
-                  </ul>
+                        <p>
+                            {data?.문서요약?.확인된기간} {data?.문서요약?.사업장명}{" "}
+                            {t("ResultPage_subtitle_analysis")}
+
+                            {documentIds.length > 0 && (
+                                <span
+                                    style={{
+                                        fontSize: "12px",
+                                        color: "#94a3b8",
+                                        marginLeft: "10px",
+                                    }}
+                                >
+                  {" "}
+                                    ({t("ResultPage_doc_id")}: {documentIds.join(", ")})
+                </span>
+                            )}
+                        </p>
+                    </div>
+
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-end",
+                            gap: "10px",
+                        }}
+                    >
+                        <button
+                            className="pdf-btn"
+                            type="button"
+                            onClick={handleDownloadPdf}
+                            style={{
+                                padding: "8px 16px",
+                                background: "#3b82f6",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontWeight: "bold",
+                            }}
+                        >
+                            {t("ResultPage_btn_pdf")}
+                        </button>
+
+                        <span
+                            className={`status-badge ${getBadgeClass(
+                                data?.최종판단?.임금체불가능성
+                            )}`}
+                        >
+              {data?.최종판단?.임금체불가능성 || t("ResultPage_status_unknown")}
+            </span>
+                    </div>
+                </header>
+
+                <div className="summary-grid">
+                    <div className="summary-card">
+                        <h3>{t("ResultPage_summary_salary")}</h3>
+
+                        {hasPaymentSummary ? (
+                            <>
+                                <div className="amount-row">
+                                    <span>{t("ResultPage_total_payment")}</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.총지급액)}</strong>
+                                </div>
+
+                                <div className="amount-row highlight">
+                                    <span>{t("ResultPage_net_pay")}</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.실수령액)}</strong>
+                                </div>
+
+                                <div className="amount-row muted">
+                                    <span>{t("ResultPage_deduction")}</span>
+                                    <span>{formatCurrency(data?.공통추출항목?.총공제액)}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="amount-row">
+                                    <span>시급</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.시급)}</strong>
+                                </div>
+
+                                <div className="amount-row highlight">
+                                    <span>계약상 일급</span>
+                                    <strong>{formatCurrency(data?.공통추출항목?.기본급)}</strong>
+                                </div>
+
+                                <div className="amount-row muted">
+                                    <span>일일 근로시간</span>
+                                    <span>{formatHour(data?.공통추출항목?.일일근로시간)}</span>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="summary-card">
+                        <h3>{t("ResultPage_doc_info")}</h3>
+
+                        <ul className="info-list">
+                            <li>
+                                <span>{t("ResultPage_worker_name")}</span>
+                                <strong>{data?.문서요약?.근로자명 || "-"}</strong>
+                            </li>
+
+                            <li>
+                                <span>{t("ResultPage_doc_type")}</span>
+                                <strong>{data?.문서요약?.문서유형 || "-"}</strong>
+                            </li>
+
+                            <li>
+                                <span>{t("ResultPage_doc_validity")}</span>
+                                <strong>{data?.문서검증?.문서적합도 || "-"}</strong>
+                            </li>
+
+                            <li>
+                                <span>{t("ResultPage_pay_date")}</span>
+                                <strong>{data?.공통추출항목?.급여지급일 || "-"}</strong>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-              )}
-              <p className="warning-text" style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>※ {data.최종판단.주의문구}</p>
+
+                {data?.임금체불분석 && Object.keys(data.임금체불분석).length > 0 && (
+                    <section className="detail-section">
+                        <h2>{t("ResultPage_detail_analysis")}</h2>
+
+                        <div className="analysis-list">
+                            {Object.entries(data.임금체불분석).map(([key, value]) => {
+                                const status = value?.위반가능성 || value?.미지급가능성;
+
+                                return (
+                                    <div className="analysis-item" key={key}>
+                                        <div className="item-header">
+                                            <h4>{titleMap[key] || key}</h4>
+
+                                            <span className={`small-badge ${getBadgeClass(status)}`}>
+                        {status || t("ResultPage_judgment_unknown")}
+                      </span>
+                                        </div>
+
+                                        <p className="item-reason">
+                                            {value?.판단근거?.[0] || t("ResultPage_no_reason")}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {data?.최종판단 && (
+                    <section className="ai-opinion-section">
+                        <h2>🤖 {t("ResultPage_ai_opinion")}</h2>
+
+                        <div className="opinion-box">
+                            <p className="opinion-desc">
+                                {data?.최종판단?.사용자에게보여줄설명 || "-"}
+                            </p>
+
+                            {data?.최종판단?.추가로필요한자료?.length > 0 && (
+                                <div className="needed-docs">
+                                    <h4>⚠️ {t("ResultPage_needed_docs")}</h4>
+
+                                    <ul>
+                                        {data.최종판단.추가로필요한자료.map((doc, idx) => (
+                                            <li key={idx}>{doc}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            <p className="warning-text">
+                                ※{" "}
+                                {data?.최종판단?.주의문구 ||
+                                    "본 분석은 AI의 1차 검토 결과이며 법률적 판단이 아닙니다."}
+                            </p>
+                        </div>
+                    </section>
+                )}
             </div>
-          </section>
-        )}
-      </div>
-    </main>
-  );
+        </main>
+    );
 }
 
 export default ResultPage;

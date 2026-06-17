@@ -1,37 +1,65 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { uploadAndAnalyzeDocumentsTogether } from "../utils/documentApi";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import {
+  processDocumentsUpToCrossCheck,
+  analyzeDocumentFinal,
+  getAnalysisResult,
+} from "../utils/documentApi";
+
+function unwrapApiResult(value) {
+  let current = value;
+
+  for (let i = 0; i < 5; i++) {
+    if (!current || typeof current !== "object") return current;
+
+    if (current.analysisId || current.status || current.documentIds) {
+      return current;
+    }
+
+    if (current.result) {
+      current = current.result;
+      continue;
+    }
+
+    if (current.data) {
+      current = current.data;
+      continue;
+    }
+
+    break;
+  }
+
+  return current;
+}
 
 function AnalysisPage() {
   const navigate = useNavigate();
 
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  const [loadingStage, setLoadingStage] = useState(""); 
-  
-  const [checking, setChecking] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
-  
+
   const { t } = useTranslation();
 
   const processFiles = (selectedFiles) => {
-    const pdfFiles = selectedFiles.filter(
-      (file) => file.type === "application/pdf"
+    const validFiles = selectedFiles.filter(
+        (file) => file.type === "application/pdf" || file.type.startsWith("image/")
     );
 
-    if (pdfFiles.length !== selectedFiles.length) {
-      alert(t('AnalysisPage_alert_only_pdf'));
+    if (validFiles.length !== selectedFiles.length) {
+      alert("PDF 또는 이미지 파일(JPG, PNG, WEBP 등)만 업로드할 수 있습니다.");
     }
 
-    if (pdfFiles.length > 10) {
-      alert(t('AnalysisPage_alert_max_files'));
+    if (validFiles.length > 10) {
+      alert(t("AnalysisPage_alert_max_files"));
       return;
     }
 
-    setFiles(pdfFiles);
+    setFiles(validFiles);
   };
 
   const handleFileChange = (event) => {
@@ -39,158 +67,182 @@ function AnalysisPage() {
     processFiles(selectedFiles);
   };
 
-  const handleDragEnter = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDragEnter = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isDragging) setIsDragging(true);
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!isDragging) {
+      setIsDragging(true);
+    }
   };
 
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDragLeave = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setIsDragging(false);
-    
-    const droppedFiles = Array.from(e.dataTransfer.files || []);
+
+    const droppedFiles = Array.from(event.dataTransfer.files || []);
     processFiles(droppedFiles);
   };
 
   const onButtonClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const handleRemoveFile = (index) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-const handleAnalyze = async () => {
-  if (files.length === 0) {
-    alert(t('AnalysisPage_alert_no_file'));
-    return;
-  }
+  const handleAnalyze = async () => {
+    if (files.length === 0) {
+      alert(t("AnalysisPage_alert_no_file"));
+      return;
+    }
 
-  const primaryFileName = files[0]?.name || "분석된 원본 문서.pdf";
+    try {
+      setLoading(true);
+      setLoadingMessage("문서를 업로드하고 OCR을 처리하고 있습니다...");
 
-  try {
-    setLoading(true);
-    setLoadingStage("ocr");
+      const rawCrossCheckResult = await processDocumentsUpToCrossCheck(files);
+      const crossCheckResult = unwrapApiResult(rawCrossCheckResult);
 
-    const stageTimer = setTimeout(() => {
-      setLoadingStage("gemini");
-    }, 4500); 
+      const analysisId = crossCheckResult?.analysisId;
+      const status = crossCheckResult?.status;
+      const documentIds = crossCheckResult?.documentIds || [];
 
-    const result = await uploadAndAnalyzeDocumentsTogether(files);
-    clearTimeout(stageTimer);
+      if (!analysisId) {
+        throw new Error("analysisId를 찾을 수 없습니다.");
+      }
 
-    console.log("🚀 [AnalysisPage 최종 결과 안착 확인]:", result);
+      if (
+          status === "READY_FOR_ANALYSIS" ||
+          crossCheckResult?.autoAnalysisAvailable === true
+      ) {
+        setLoadingMessage("임금 이상을 탐지 중입니다...");
+        await analyzeDocumentFinal(analysisId);
 
-    const targetId = (result.documentIds && result.documentIds.length > 0) ? result.documentIds[0] : 8;
+        setLoadingMessage("분석 결과를 불러오는 중입니다...");
+        const analysisData = await getAnalysisResult(analysisId);
 
-    navigate(`/result/${targetId}`, {
-      state: {
-        documentIds: result.documentIds || [targetId],
-        analysisResult: result.analysisResult,
-        fileName: primaryFileName,
-      },
-    });
+        navigate("/result", {
+          state: {
+            documentIds,
+            analysisResult: analysisData,
+          },
+        });
 
-  } catch (error) {
-    console.error("🚨 분석 프로세스 도중 런타임 예외 감지:", error);
-    alert(error.message || t('AnalysisPage_alert_error'));
-  } finally {
-    setLoading(false);
-    setLoadingStage("");
-  }
-};
+        return;
+      }
 
-  useEffect(() => {
-    setChecking(false);
-  }, []);
+      if (
+          status === "USER_REVIEW_REQUIRED" ||
+          crossCheckResult?.userReviewRequired === true
+      ) {
+        navigate(`/review/${analysisId}`, {
+          state: {
+            analysisId,
+            documentIds,
+          },
+        });
 
-  if (checking) return <div>{t('AnalysisPage_checking', '정보 확인 중...')}</div>;
+        return;
+      }
+
+      throw new Error(`알 수 없는 분석 상태입니다: ${status || "상태 없음"}`);
+    } catch (error) {
+      console.error("분석 처리 실패:", error);
+      alert(error.message || t("AnalysisPage_alert_error"));
+    } finally {
+      setLoading(false);
+      setLoadingMessage("");
+    }
+  };
 
   return (
-    <main className="page">
-      <section className="card upload-container">      
-        <p className="eyebrow">analyse</p>
-        <h2>{t('AnalysisPage_h2')}</h2>
-        <p>{t('AnalysisPage_description')}</p>
-        <div 
-          className={`dropzone ${isDragging ? 'active' : ''}`}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <input
-            type="file"
-            accept="application/pdf"
-            multiple
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            style={{ display: "none" }} 
-          />
-          
-          <div className="dropzone-content">
-            <p className="main-text">{t('AnalysisPage_dropzone_main')}</p>
-            <p className="sub-text">{t('AnalysisPage_dropzone_sub')}</p>
-            <button type="button" className="select-btn" onClick={onButtonClick}>
-              {t('AnalysisPage_btn_select')}
-            </button>
+      <main className="page">
+        <section className="card upload-container">
+          <p className="eyebrow">analyse</p>
+
+          <h2>{t("AnalysisPage_h2")}</h2>
+          <p>{t("AnalysisPage_description")}</p>
+
+          <div
+              className={`dropzone ${isDragging ? "active" : ""}`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+          >
+            <input
+                type="file"
+                accept="application/pdf, image/jpeg, image/png, image/webp"
+                multiple
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+            />
+
+            <div className="dropzone-content">
+              <p className="main-text">
+                {t("AnalysisPage_dropzone_main")} (PDF, 이미지 지원)
+              </p>
+              <p className="sub-text">{t("AnalysisPage_dropzone_sub")}</p>
+
+              <button type="button" className="select-btn" onClick={onButtonClick}>
+                {t("AnalysisPage_btn_select")}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {files.length > 0 && (
-          <ul className="file-list">
-            {files.map((file, index) => (
-              <li key={`${file.name}-${index}`}>
-                <span>{file.name}</span>
-                <button type="button" onClick={() => handleRemoveFile(index)}>
-                  {t('AnalysisPage_btn_delete')}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+          {files.length > 0 && (
+              <ul className="file-list">
+                {files.map((file, index) => (
+                    <li key={`${file.name}-${index}`}>
+                      <span>{file.name}</span>
 
-        <button
-          className="analyze-submit-btn"
-          type="button"
-          onClick={handleAnalyze}
-          disabled={loading || files.length === 0}
-          style={{ 
-            marginTop: '20px', 
-            width: '100%', 
-            padding: '12px', 
-            backgroundColor: loading || files.length === 0 ? '#94A3B8' : '#1E1B4B', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '6px', 
-            fontWeight: 'bold', 
-            cursor: loading || files.length === 0 ? 'not-allowed' : 'pointer' 
-          }}
-        >
-          {loading ? (
-            loadingStage === "ocr" 
-              ? "원본 문서에서 OCR 추출 중입니다..." 
-              : "AI를 통해 임금 체불 리스크를 분석 중입니다..."
-          ) : (
-            t('AnalysisPage_btn_start')
+                      <button type="button" onClick={() => handleRemoveFile(index)}>
+                        {t("AnalysisPage_btn_delete")}
+                      </button>
+                    </li>
+                ))}
+              </ul>
           )}
-        </button>
-      </section>
-    </main>
+
+          <button
+              className="analyze-submit-btn"
+              type="button"
+              onClick={handleAnalyze}
+              disabled={loading || files.length === 0}
+              style={{
+                marginTop: "20px",
+                width: "100%",
+                padding: "12px",
+                backgroundColor: loading || files.length === 0 ? "#94A3B8" : "#1E1B4B",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                fontWeight: "bold",
+                cursor: loading || files.length === 0 ? "not-allowed" : "pointer",
+              }}
+          >
+            {loading
+                ? loadingMessage || t("AnalysisPage_btn_analyzing")
+                : t("AnalysisPage_btn_start")}
+          </button>
+        </section>
+      </main>
   );
 }
 

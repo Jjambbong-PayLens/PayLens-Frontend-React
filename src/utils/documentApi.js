@@ -4,24 +4,105 @@ function getAccessToken() {
   return localStorage.getItem("accessToken");
 }
 
+async function parseResponseBody(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("응답 JSON 파싱 실패:", error);
+    return text;
+  }
+}
+
 async function apiFetch(path, options = {}) {
   const token = getAccessToken();
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const headers = {
+    ...(options.headers || {}),
+  };
 
-  const data = await response.json();
-
-  if (!response.ok || data.isSuccess === false) {
-    throw new Error(data.message || "API 요청 실패");
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
 
-  return data.result;
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await parseResponseBody(response);
+
+  if (!response.ok) {
+    console.error("API 실패:", {
+      path,
+      status: response.status,
+      data,
+    });
+
+    const message =
+        data?.message ||
+        data?.error ||
+        `API 요청 실패: ${response.status}`;
+
+    throw new Error(message);
+  }
+
+  if (data?.isSuccess === false) {
+    throw new Error(data?.message || "API 요청 실패");
+  }
+
+  if (data && typeof data === "object" && "result" in data) {
+    return data.result;
+  }
+
+  return data;
+}
+
+function normalizeUploadInfos(uploadUrlResult) {
+  if (!uploadUrlResult) return [];
+
+  if (Array.isArray(uploadUrlResult)) {
+    return uploadUrlResult;
+  }
+
+  if (Array.isArray(uploadUrlResult.files)) {
+    return uploadUrlResult.files;
+  }
+
+  if (Array.isArray(uploadUrlResult.uploadInfos)) {
+    return uploadUrlResult.uploadInfos;
+  }
+
+  if (Array.isArray(uploadUrlResult.uploadUrls)) {
+    return uploadUrlResult.uploadUrls;
+  }
+
+  return [];
+}
+
+function normalizeReviewPayload(payloadOrDocumentGroups) {
+  if (
+      payloadOrDocumentGroups &&
+      typeof payloadOrDocumentGroups === "object" &&
+      Array.isArray(payloadOrDocumentGroups.documentGroups)
+  ) {
+    return payloadOrDocumentGroups;
+  }
+
+  if (Array.isArray(payloadOrDocumentGroups)) {
+    return {
+      documentGroups: payloadOrDocumentGroups,
+    };
+  }
+
+  return {
+    documentGroups: [],
+  };
 }
 
 export async function requestUploadUrls(files, documentType = "OTHER") {
@@ -41,22 +122,34 @@ export async function requestUploadUrls(files, documentType = "OTHER") {
 }
 
 export async function uploadFilesToS3(files, uploadInfos) {
+  if (!Array.isArray(uploadInfos) || uploadInfos.length === 0) {
+    throw new Error("S3 업로드 URL 정보를 찾을 수 없습니다.");
+  }
+
+  if (files.length !== uploadInfos.length) {
+    throw new Error("파일 개수와 업로드 URL 개수가 일치하지 않습니다.");
+  }
+
   await Promise.all(
-    files.map(async (file, index) => {
-      const uploadInfo = uploadInfos[index];
+      files.map(async (file, index) => {
+        const uploadInfo = uploadInfos[index];
 
-      const response = await fetch(uploadInfo.uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": file.type || "application/pdf",
-        },
-        body: file,
-      });
+        if (!uploadInfo?.uploadUrl) {
+          throw new Error(`${file.name} 업로드 URL이 없습니다.`);
+        }
 
-      if (!response.ok) {
-        throw new Error(`${file.name} S3 업로드 실패`);
-      }
-    })
+        const response = await fetch(uploadInfo.uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type || "application/pdf",
+          },
+          body: file,
+        });
+
+        if (!response.ok) {
+          throw new Error(`${file.name} S3 업로드 실패`);
+        }
+      })
   );
 }
 
@@ -66,34 +159,92 @@ export async function completeUploads(documentIds) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      documentIds,
-    }),
+    body: JSON.stringify({ documentIds }),
   });
 }
 
-export async function processDocumentsOCR(documentIds) {
+export async function requestOCR(documentIds) {
   return apiFetch("/api/documents/ocr", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      documentIds,
-    }),
+    body: JSON.stringify({ documentIds }),
   });
 }
 
-export async function analyzeDocumentsTogether(documentIds) {
-  return apiFetch("/api/gemini/analyze", {
+export async function requestCrossCheck(documentIds) {
+  return apiFetch("/api/gemini/cross-check", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      documentIds,
-    }),
+    body: JSON.stringify({ documentIds }),
   });
+}
+
+export async function getReviewData(analysisId) {
+  return apiFetch(`/api/gemini/${analysisId}/review`, {
+    method: "GET",
+  });
+}
+
+export async function submitReviewData(analysisId, payloadOrDocumentGroups) {
+  const payload = normalizeReviewPayload(payloadOrDocumentGroups);
+
+  return apiFetch(`/api/gemini/${analysisId}/review`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function analyzeDocumentFinal(analysisId) {
+  return apiFetch(`/api/gemini/${analysisId}/analyze`, {
+    method: "POST",
+  });
+}
+
+export async function getAnalysisResult(analysisId) {
+  return apiFetch(`/api/analyses/${analysisId}`, {
+    method: "GET",
+  });
+}
+
+export async function processDocumentsUpToCrossCheck(files) {
+  const uploadUrlResult = await requestUploadUrls(files);
+  const uploadInfos = normalizeUploadInfos(uploadUrlResult);
+
+  if (uploadInfos.length === 0) {
+    throw new Error("업로드 URL 응답이 비어 있습니다.");
+  }
+
+  await uploadFilesToS3(files, uploadInfos);
+
+  const documentIds = uploadInfos
+      .map((info) => info.documentId)
+      .filter((id) => id !== null && id !== undefined);
+
+  if (documentIds.length === 0) {
+    throw new Error("documentId를 찾을 수 없습니다.");
+  }
+
+  await completeUploads(documentIds);
+  await requestOCR(documentIds);
+
+  const crossCheckResult = await requestCrossCheck(documentIds);
+
+  return {
+    ...crossCheckResult,
+    documentIds,
+    analysisId: crossCheckResult?.analysisId,
+    status: crossCheckResult?.status,
+    autoAnalysisAvailable: crossCheckResult?.autoAnalysisAvailable,
+    userReviewRequired: crossCheckResult?.userReviewRequired,
+    recaptureRequired: crossCheckResult?.recaptureRequired,
+  };
 }
 
 export async function updateUserLanguageAPI(langCode) {
@@ -104,15 +255,13 @@ export async function updateUserLanguageAPI(langCode) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      language: formattedLang,
-    }),
+    body: JSON.stringify({ language: formattedLang }),
   });
 }
 
 export async function getUploadedDocuments() {
   return apiFetch("/api/documents", {
-    method: "GET"
+    method: "GET",
   });
 }
 
@@ -122,62 +271,6 @@ export async function deleteDocuments(documentIds) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      documentIds: documentIds,
-    }),
+    body: JSON.stringify({ documentIds }),
   });
-}
-
-export async function uploadAndAnalyzeDocumentsTogether(files) {
-  const uploadUrlResult = await requestUploadUrls(files);
-  const uploadInfos = uploadUrlResult.files || uploadUrlResult;
-
-  await uploadFilesToS3(files, uploadInfos);
-
-  const documentIds = uploadInfos.map((info) => info.documentId);
-
-  await completeUploads(documentIds);
-
-  let ocrResult = null;
-  try {
-    ocrResult = await processDocumentsOCR(documentIds);
-    console.log("📡 [OCR 가동 완료 상태]:", ocrResult);
-  } catch (ocrError) {
-    console.warn("⚠️ OCR 단계에서 에러가 발생했으나 파이프라인을 유지합니다.", ocrError);
-  }
-
-  let analysisResult = null;
-  try {
-    console.log("🧠 제미나이 종합 리스크 분석 API 호출 시도...");
-    const rawResult = await analyzeDocumentsTogether(documentIds);
-    
-    if (typeof rawResult === 'string') {
-      console.log("⚠️ 제미나이 응답이 String 텍스트 타입으로 감지되어 JSON 강제 파싱을 시도합니다.");
-      
-      let cleanJson = rawResult.trim();
-      
-      cleanJson = cleanJson.replace(/^```json\s*/i, "");
-      cleanJson = cleanJson.replace(/```\s*$/, "");
-      cleanJson = cleanJson.trim();
-      
-      try {
-        analysisResult = JSON.parse(cleanJson);
-        console.log("🧠 [정제 및 파싱 성공!!!]:", analysisResult);
-      } catch (parseInnerError) {
-        console.error("❌ 정제 후 JSON.parse 자체 실패 (특수문자 혹은 포맷 문제):", parseInnerError);
-        analysisResult = null; 
-      }
-    } else {
-      analysisResult = rawResult;
-    }
-  } catch (geminiError) {
-    console.error("❌ Gemini 분석 파이프라인 치명적 예외 제어 (로그인 튕김 방지):", geminiError);
-    analysisResult = null;
-  }
-
-  return {
-    documentIds: documentIds || [8],
-    analysisResult: analysisResult,
-    ocrDocuments: ocrResult?.documents || [],
-  };
 }
