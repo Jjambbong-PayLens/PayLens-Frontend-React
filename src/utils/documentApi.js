@@ -430,3 +430,9 @@ export async function getPendingLabors() {
     method: "GET",
   });
 }
+
+export async function verifyUserAuth() {
+  return apiFetch("/api/user/me", {
+    method: "GET",
+  });
+}
