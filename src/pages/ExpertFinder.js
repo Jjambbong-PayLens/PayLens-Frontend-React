@@ -4,23 +4,23 @@ import { useTranslation } from 'react-i18next';
 import { getLabors, updateLaborProfile, deleteLaborProfile, applyLaborRole, requestUploadUrls, uploadFilesToS3, completeUploads } from '../utils/documentApi';
 import { useRef } from 'react';
 import AdminLaborModal from './AdminLaborModal';
+import ProfileFormModal from './ProfileFormModal'; // 1. 모달 컴포넌트 import
 import { getUser } from '../utils/auth';
 
 function ExpertFinder() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // 현재 로그인한 사용자 정보 (auth 저장소에서 읽음)
-  //const currentUser = getUser() || { id: null, role: null };
-
   const currentUser = { id: 123, role: "ADMIN" }; // 임시 관리자 권한 설정
 
-  // 서버에서 받아올 데이터 상태 관리
   const [experts, setExperts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [adminModalInitialView, setAdminModalInitialView] = useState(null);
   
+  // 2. 모달 제어용 상태 추가
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
   const [selectedRegion, setSelectedRegion] = useState('전체');
   const [selectedSpecialty, setSelectedSpecialty] = useState('전체');
 
@@ -32,25 +32,22 @@ function ExpertFinder() {
   const regions = ['전체', '서울', '경기', '인천', '부산', '기타'];
   const specialties = ['전체', '임금체불', '부당해고', '산업재해', '직장내괴롭힘', '노사관계'];
 
-  // 목록 API 호출 로직
-  useEffect(() => {
-    const fetchExpertList = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getLabors();
-        // 백엔드 응답이 배열 형태라고 가정하고 상태에 저장
-        setExperts(data || []); 
-      } catch (error) {
-        console.error('전문가 목록을 불러오는데 실패했습니다:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchExpertList = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getLabors();
+      setExperts(data || []); 
+    } catch (error) {
+      console.error('전문가 목록을 불러오는데 실패했습니다:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchExpertList();
   }, []);
 
-  // fixed button vertical position updater: align with admin card center
   useEffect(() => {
     const updateTop = () => {
       if (adminCardRef?.current) {
@@ -68,13 +65,10 @@ function ExpertFinder() {
     };
   }, [adminCardRef, isUploading]);
 
-  // experts 필터링
   const filteredExperts = experts.filter(expert => {
-    // region 비교
     const expertRegion = (expert.region || '').toString();
     const matchRegion = selectedRegion === '전체' || (expertRegion && expertRegion.toLowerCase() === selectedRegion.toLowerCase());
 
-    // specialties : 배열이거나 쉼표로 연결된 문자열일 수 있으므로 보호 처리
     let expertSpecialties = [];
     if (Array.isArray(expert.specialties)) {
       expertSpecialties = expert.specialties.map(s => (s || '').toString());
@@ -87,13 +81,12 @@ function ExpertFinder() {
     return matchRegion && matchSpecialty;
   });
 
-  // 액션 핸들러
   const handleCardClick = (expertId) => {
-    navigate(`/expert/${expertId}`); // 상세 페이지로 이동
+    navigate(`/expert/${expertId}`);
   };
 
   const handleEdit = (e, expertId) => {
-    e.stopPropagation(); // 카드 클릭 이벤트(상세보기) 방지
+    e.stopPropagation();
     const newName = window.prompt('변경할 이름을 입력하세요 (취소 시 중단)');
     if (!newName) return;
 
@@ -139,10 +132,24 @@ function ExpertFinder() {
     return validFiles;
   };
 
+  // 5. 모달에서 프로필 생성 성공 시 호출될 함수
+  const handleProfileCreated = (newProfile) => {
+    // 목록 맨 앞에 새 프로필 추가
+    setExperts(prev => [newProfile, ...prev]);
+  };
+
   return (
     <div className="expert-finder-container">
-      {/* 상단 카드 그룹: 대기 관리(관리자) + 노무사 신청(항상 노출) */}
       <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 25, flexWrap: 'wrap', marginBottom: 12 }}>
+        
+        {/* 4. 기존 테스트 버튼을 새로운 버튼으로 교체 */}
+        <button 
+          onClick={() => setIsProfileModalOpen(true)} 
+          style={{padding: '10px 15px', border: '1px solid #1e40af', color: '#1e40af', backgroundColor: '#eff6ff', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'}}
+        >
+          ✨ 신규 프로필 등록
+        </button>
+
         {isAdmin && (
           <section ref={adminCardRef} className="card admin-section" style={{
             marginTop: '0',
@@ -176,7 +183,6 @@ function ExpertFinder() {
           </section>
         )}
 
-        {/* 노무사 신청 카드 (항상 보임) */}
         <section className="card admin-section" style={{
           marginTop: '0',
           marginBottom: '0',
@@ -215,7 +221,6 @@ function ExpertFinder() {
                     await completeUploads(documentIds);
                   }
 
-                  // 파일 업로드 후 등업 신청 API 호출
                   await applyLaborRole();
                   alert('등업 신청이 접수되었습니다.');
                 } catch (err) {
@@ -257,7 +262,6 @@ function ExpertFinder() {
       </header>
 
       <div className="expert-layout">
-        {/* 왼쪽 필터 사이드바 */}
         <aside className="expert-sidebar">
           <div className="filter-group">
             <h3>지역</h3>
@@ -290,7 +294,6 @@ function ExpertFinder() {
           </div>
         </aside>
 
-        {/* 📌 오른쪽 전문가 카드 리스트 */}
         <main className="expert-content">
           <div className="content-header">
             <span>총 <strong>{filteredExperts.length}</strong>명의 전문가가 있습니다.</span>
@@ -298,7 +301,6 @@ function ExpertFinder() {
 
           <div className="expert-grid">
             {filteredExperts.map(expert => {
-              // 본인 프로필인지 확인
               const isMine = currentUser.role === 'LABOR_ATTORNEY' && currentUser.id === expert.userId;
               const canManageProfile = isAdmin || isMine;
 
@@ -325,7 +327,6 @@ function ExpertFinder() {
                       ))}
                     </div>
 
-                    {/* 본인 프로필일 경우에만 수정/삭제 버튼 노출 */}
                     {canManageProfile && (
                       <div className="card-actions">
                         <button className="edit-btn" onClick={(e) => handleEdit(e, expert.id)}>수정</button>
@@ -348,6 +349,13 @@ function ExpertFinder() {
       </div>
 
       <AdminLaborModal isOpen={isAdminModalOpen} onClose={() => { setIsAdminModalOpen(false); setAdminModalInitialView(null); }} initialView={adminModalInitialView} />
+      
+      {/* 페이지 맨 아래에 모달 컴포넌트 추가 */}
+      <ProfileFormModal 
+        isOpen={isProfileModalOpen} 
+        onClose={() => setIsProfileModalOpen(false)}
+        onProfileCreated={handleProfileCreated}
+      />
       
     </div>
   );
