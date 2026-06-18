@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
 import PaymentModal from './PaymentModal';
 import DocumentListModal from './DocumentListModal';
-import AdminLaborModal from './AdminLaborModal';
 
 function MyPage() {
   const { t, i18n } = useTranslation();
@@ -27,7 +26,6 @@ function MyPage() {
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false); 
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   
   const totalCount = analyses.length;
   const currentMonth = new Date().getMonth();
@@ -274,7 +272,6 @@ function MyPage() {
         documents={analyses} 
         onDeleteDoc={handleDeleteAnalysis}
       />
-      <AdminLaborModal isOpen={isAdminModalOpen} onClose={() => setIsAdminModalOpen(false)} />
     </main>
   );
 }

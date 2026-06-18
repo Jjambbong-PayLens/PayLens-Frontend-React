@@ -90,7 +90,7 @@ function MainLayout() {
                 
                 {isMoreOpen && (
                   <div className="dropdown-menu">
-                    <button onClick={() => navigate('/notice')}>{t("MainLayout_news")}</button>
+                    <button onClick={() => navigate('/notice')}>{t("MainLayout_notice")}</button>
                     <button onClick={() => navigate('/glossary')}>{t("MainLayout_glossary")}</button>
                   </div>
                 )}

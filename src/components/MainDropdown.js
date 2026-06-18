@@ -20,7 +20,7 @@ function Header() {
         {/* 드롭다운 메뉴 */}
         {isDropdownOpen && (
           <div className="dropdown-menu">
-            <Link to="/notice">{t("MainDropdown_news")}</Link>
+            <Link to="/notice">{t("MainDropdown_notice")}</Link>
             <Link to="/glossary">{t("MainDropdown_glossary")}</Link>
           </div>
         )}

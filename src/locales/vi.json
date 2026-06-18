@@ -2,14 +2,14 @@
     "MainLayout_nav1": "So sánh gói",
     "MainLayout_nav2": "Hướng dẫn tính năng",
     "MainLayout_nav3": "Xem thêm",
-    "MainLayout_news": "thông báo",
+    "MainLayout_notice": "Công báo",
     "MainLayout_glossary": "Từ điển thuật ngữ",
     "MainLayout_home": "Trang chủ",
     "MainLayout_login": "Đăng nhập",
     "MainLayout_logout": "Đăng xuất",
 
     "MainDropdown_more": "Xem thêm",
-    "MainDropdown_news": "Tin tức",
+    "MainDropdown_notice": "Công báo",
     "MainDropdown_glossary": "Từ điển thuật ngữ",
 
     "MainPage_subtitle": "Tiền lương của lao động nước ngoài",
@@ -17,8 +17,8 @@
     "MainPage_button": "Phát hiện ngay",
     "MainPage_feature-title": "Dịch vụ phát hiện bất thường mạnh mẽ",
     "MainPage_feature-desc": "Tính năng phát hiện bất thường về tiền lương của lao động nước ngoài mạnh mẽ được các chuyên gia sử dụng",
-    "MainPage_news-title": "Chính sách lao động và tin tức mới nhất",
-    "MainPage_news-subtitle": "Kiểm tra thông tin mới nhất cần thiết cho cả người lao động và người sử dụng lao động.",
+    "MainPage_notice-title": "Chính sách lao động và công báo mới nhất",
+    "MainPage_notice-subtitle": "Kiểm tra thông tin mới nhất cần thiết cho cả người lao động và người sử dụng lao động.",
 
     "PricePage_title": "Gói và Bảng giá",
     "PricePage_subtitle": "Chúng tôi cung cấp gói xử lý bất thường hợp lý",
