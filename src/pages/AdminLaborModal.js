@@ -7,12 +7,27 @@ function AdminLaborModal({ isOpen, onClose }) {
   const [pendingList, setPendingList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🚀 대기 중(PENDING)인 노무사 신청 목록 불러오기
+  // 대기 중(PENDING)인 노무사 신청 목록 불러오기
   const fetchPendingList = async () => {
     try {
       setIsLoading(true);
       const data = await getPendingLabors(); 
-      setPendingList(data || []);
+
+      // 백엔드 응답이 어떤 형태든 '배열'만 안전하게 추출합니다.
+      let safeArray = [];
+      if (Array.isArray(data)) {
+        safeArray = data;                   // 1. 이미 순수한 배열일 경우
+      } else if (data && Array.isArray(data.result)) {
+        safeArray = data.result;            // 2. { result: [...] } 형태일 경우
+      } else if (data && Array.isArray(data.content)) {
+        safeArray = data.content;           // 3. 페이지네이션 { content: [...] } 형태일 경우
+      } else if (data && Array.isArray(data.data)) {
+        safeArray = data.data;              // 4. { data: [...] } 형태일 경우
+      }
+
+      // 추출해낸 안전한 배열만 State에 저장
+      setPendingList(safeArray);
+
     } catch (error) {
       console.error("대기 목록 조회 실패:", error);
       alert(error.message || t('AdminModal_msg_error', '대기 목록을 불러오는 중 오류가 발생했습니다.')); 
@@ -27,7 +42,7 @@ function AdminLaborModal({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  // 🚀 승인 API 연동
+  // 승인 API 연동
   const handleApprove = async (userId) => {
     if (!window.confirm(t('AdminModal_confirm_approve', '해당 유저의 노무사 권한을 승인하시겠습니까?'))) return;
     try {
@@ -39,7 +54,7 @@ function AdminLaborModal({ isOpen, onClose }) {
     }
   };
 
-  // 🚀 거절 API 연동
+  // 거절 API 연동
   const handleReject = async (userId) => {
     if (!window.confirm(t('AdminModal_confirm_reject', '해당 유저의 노무사 권한을 거절하시겠습니까?'))) return;
     try {

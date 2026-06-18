@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getNoticeDetail, deleteNotice } from '../utils/documentApi'; // 작성해둔 API 함수 임포트
+import { getNoticeDetail, deleteNotice, verifyUserAuth } from '../utils/documentApi'; // 작성해둔 API 함수 임포트
 import NoticeModal from './NoticeModal';
 
 const categoryMap = {
@@ -15,13 +15,13 @@ function NoticeDetailPage() {
   const { noticeId } = useParams(); // URL에서 /notice/123 의 '123'을 가져옴
   const navigate = useNavigate();
 
-  const [isAdmin, setIsAdmin] = useState(true); // 임시 관리자 권한
+  const [isAdmin, setIsAdmin] = useState(false);
   const [notice, setNotice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // 🚀 상세 조회 API 호출
+  // 상세 조회 API 호출
   useEffect(() => {
     const fetchDetail = async () => {
       try {
@@ -40,6 +40,20 @@ function NoticeDetailPage() {
       fetchDetail();
     }
   }, [noticeId]);
+
+  // 관리자 권한 확인
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const userInfo = await verifyUserAuth();
+        setIsAdmin(userInfo?.role === 'ADMIN');
+      } catch (err) {
+        console.error('권한 확인 실패:', err);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // 🚀 삭제 API 호출
   const handleDelete = async () => {
@@ -74,7 +88,7 @@ function NoticeDetailPage() {
 
   return (
     <div className="notice-detail-container">
-      {/* 📌 상세창 헤더 */}
+      {/* 상세창 헤더 */}
       <header className="detail-header">
         <span className={`badge ${notice.category.toLowerCase()}`}>
           {categoryMap[notice.category]}
@@ -85,7 +99,7 @@ function NoticeDetailPage() {
         </div>
       </header>
 
-      {/* 📌 본문 영역 */}
+      {/* 본문 영역 */}
       <section className="detail-body">
         {notice.thumbnailUrl && (
           <div className="detail-thumbnail">
@@ -99,7 +113,6 @@ function NoticeDetailPage() {
         </div>
       </section>
 
-      {/* 📌 하단 컨트롤러 */}
       <div className="detail-footer">
         <button className="list-btn" onClick={() => navigate('/notice')}>
           목록으로

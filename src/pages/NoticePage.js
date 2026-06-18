@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import NoticeModal from './NoticeModal';
-import { getNotices } from '../utils/documentApi';
+import { getNotices, verifyUserAuth } from '../utils/documentApi';
+import { getUser } from '../utils/auth'; 
 
 function NoticePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [isAdmin, setIsAdmin] = useState(true); 
-  const [activeCategory, setActiveCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [activeCategory, setActiveCategory] = useState('all');
+
   const [notices, setNotices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const ITEMS_PER_PAGE = 20;
 
@@ -23,16 +25,15 @@ function NoticePage() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const result = await getNotices();
-      
+
       if (Array.isArray(result)) {
         const sortedNotices = result.sort((a, b) => b.noticeId - a.noticeId);
         setNotices(sortedNotices);
       } else {
         setNotices([]);
       }
-
     } catch (err) {
       console.error('공지사항 조회 실패:', err);
       setError(err.message || t('NoticePage_msg_error', '공지사항 목록을 불러오는 중 오류가 발생했습니다.'));
@@ -43,6 +44,19 @@ function NoticePage() {
 
   useEffect(() => {
     fetchNotices();
+  }, []);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const userInfo = await verifyUserAuth();
+        setIsAdmin(userInfo?.role === 'ADMIN');
+      } catch (err) {
+        console.error('권한 확인 실패:', err);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
   }, []);
 
   const filteredNotices = activeCategory === 'all' 
@@ -88,6 +102,7 @@ function NoticePage() {
           <p>{t('NoticePage_header_subtitle', 'PayLens의 최신 업데이트 및 주요 소식을 전해드립니다.')}</p>
         </div>
         
+        {/* 🌟 4. isAdmin이 true일 때만 버튼이 노출됩니다! */}
         {isAdmin && (
           <div className="admin-actions">
             <button className="write-notice-btn" onClick={() => setIsModalOpen(true)}>
