@@ -96,11 +96,11 @@ function PaymentModal({ isOpen, onClose, onPaymentSuccess }) {
         }
         @keyframes slideUp {
           from {
-            transform: translateY(100px);
+            transform: translateY(100px); /* 🌟 아래에서 100px 밑에서 시작 */
             opacity: 0;
           }
           to {
-            transform: translateY(0);
+            transform: translateY(0); /* 원래 위치로 쏙 */
             opacity: 1;
           }
         }
@@ -170,8 +170,8 @@ function PaymentModal({ isOpen, onClose, onPaymentSuccess }) {
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px dashed #cbd5e1' }}>
-            <span style={{ color: '#64748b', fontSize: '14px' }}>결제 주기</span>
-            <span style={{ color: '#334155', fontSize: '14px', fontWeight: '600' }}>매월 자동결제</span>
+            <span style={{ color: '#64748b', fontSize: '14px' }}>{t('PaymentPage_payment_period')}</span>
+            <span style={{ color: '#334155', fontSize: '14px', fontWeight: '600' }}>{t('PaymentPage_payment_permonth')}</span>
           </div>
         </div>
         

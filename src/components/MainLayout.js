@@ -23,7 +23,9 @@ function MainLayout() {
   const currentPage = (() => {
     if (location.pathname === '/pricing') return 'pricing';
     if (location.pathname === '/explain') return 'explain';
-    if (['/news', '/glossary'].includes(location.pathname)) return 'more'
+    if (location.pathname.startsWith('/notice') || location.pathname === '/glossary') {
+      return 'more';
+    }
     return 'home';
   })();
 
@@ -88,7 +90,7 @@ function MainLayout() {
                 
                 {isMoreOpen && (
                   <div className="dropdown-menu">
-                    <button onClick={() => navigate('/news')}>{t("MainLayout_news")}</button>
+                    <button onClick={() => navigate('/notice')}>{t("MainLayout_news")}</button>
                     <button onClick={() => navigate('/glossary')}>{t("MainLayout_glossary")}</button>
                   </div>
                 )}

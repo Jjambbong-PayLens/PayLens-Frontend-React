@@ -2079,220 +2079,7 @@ background-color: #f7f8fb;
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* 전체 컨테이너 및 헤더는 기존 스타일 유지 */
-.news-page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 60px 20px;
-  background-color: #ffffff;
-}
 
-.news-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.news-header h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #1a1a1a;
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-}
-
-/* 🌟 어도비 스타일 토픽 필터 버튼 영역 */
-.topic-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 50px;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 16px;
-}
-
-.topic-tab-btn {
-  background: none;
-  border: none;
-  padding: 8px 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #718096;
-  cursor: pointer;
-  border-radius: 20px;
-  transition: all 0.2s ease-in-out;
-}
-
-.topic-tab-btn:hover {
-  color: #1a1a1a;
-  background-color: #f7fafc;
-}
-
-/* 활성화되었을 때 어도비 특유의 다크/세련된 스타일 */
-.topic-tab-btn.active {
-  background-color: #1a1a1a;
-  color: #ffffff;
-}
-
-/* 🌟 한 행에 딱 3개씩 일정하게 배치하는 3열 그리드 */
-.news-grid-3cols {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 무조건 3등분 */
-  gap: 30px;
-}
-
-/* 태블릿이나 모바일처럼 화면이 좁아질 때의 반응형 대응 */
-@media (max-width: 1024px) {
-  .news-grid-3cols {
-    grid-template-columns: repeat(2, 1fr); /* 2개씩 */
-  }
-}
-
-@media (max-width: 640px) {
-  .news-grid-3cols {
-    grid-template-columns: 1fr; /* 모바일은 1개씩 세로 나열 */
-  }
-}
-
-/* 카드 세부 디자인 (기존과 동일하되 여백 밸런스 조정) */
-.news-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-}
-
-.news-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
-}
-
-.news-image-wrapper {
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-}
-
-.news-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.news-card:hover .news-image {
-  transform: scale(1.03);
-}
-
-.news-content {
-  padding: 20px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.news-category {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #3b82f6;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  letter-spacing: 0.05em;
-}
-
-.news-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 10px;
-  line-height: 1.4;
-}
-
-.news-summary {
-  font-size: 0.95rem;
-  color: #4a5568;
-  line-height: 1.5;
-  margin-bottom: 20px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex-grow: 1;
-}
-
-.news-date {
-  font-size: 0.85rem;
-  color: #a0aec0;
-  margin-top: auto;
-}
-/* 🌟 페이지네이션 하단 바 스타일 */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 60px;
-}
-
-/* 숫자 버튼 */
-.page-number-btn {
-  background: none;
-  border: 1px solid #e2e8f0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #4a5568;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-number-btn:hover {
-  background-color: #f7fafc;
-  border-color: #cbd5e0;
-  color: #1a1a1a;
-}
-
-/* 활성화된 현재 페이지 숫자 버튼 */
-.page-number-btn.active {
-  background-color: #1a1a1a;
-  border-color: #1a1a1a;
-  color: #ffffff;
-}
-
-/* 화살표 (< , >) 버튼 */
-.page-arrow-btn {
-  background: none;
-  border: 1px solid #e2e8f0;
-  width: 40px;
-  height: 40px;
-  font-size: 1rem;
-  color: #4a5568;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-.page-arrow-btn:hover:not(:disabled) {
-  background-color: #f7fafc;
-  color: #1a1a1a;
-}
-
-/* 더 이상 갈 곳이 없을 때 화살표 비활성화 */
-.page-arrow-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background-color: #f7fafc;
-}
 .glossary-page-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -2474,4 +2261,700 @@ background-color: #f7f8fb;
   background: rgba(0, 0, 0, 0.3);
   z-index: 1500;
   backdrop-filter: blur(2px);
+}
+
+.notice-header {
+  display: flex;
+  justify-content: space-between; /* 제목은 왼쪽, 버튼은 오른쪽으로 찢기 */
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.header-title-area h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.header-title-area p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* 관리자용 글쓰기 버튼 */
+.write-notice-btn {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.write-notice-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* 카테고리 탭 영역 */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.category-tab-btn {
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -11px; /* 부모의 border-bottom과 선을 맞추기 위한 트릭 */
+}
+
+.category-tab-btn:hover {
+  color: #0f172a;
+}
+
+.category-tab-btn.active {
+  color: #2563eb;
+  font-weight: 700;
+  border-bottom-color: #2563eb;
+}
+
+/* 🚀 게시판 리스트 영역 (CSS Grid 활용) */
+.notice-board {
+  border-top: 2px solid #0f172a; /* 상단 포인트 굵은 선 */
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.notice-board-header {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+  text-align: center;
+  font-size: 14px;
+}
+
+.notice-row {
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notice-row:hover {
+  background-color: #f1f5f9;
+}
+
+/* 각 컬럼 정렬 */
+.col-id, .col-date {
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.col-category {
+  text-align: center;
+}
+
+.col-title {
+  text-align: left;
+  padding-left: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+/* 분류 뱃지 스타일 */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #e2e8f0; /* 기본 회색 배경 */
+  color: #475569;
+}
+
+/* 빈 상태 (Empty State) */
+.empty-state {
+  padding: 60px 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+/* 1️⃣ 좁았던 폭을 1200px로 대폭 확장하여 시원하게 만듭니다 */
+.notice-page-container {
+  width: 100%;
+  max-width: 900px; /* 기존 1000px에서 변경 */
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* 2️⃣ 날짜 영역이 길어질 수 있으므로 Grid의 4번째 칸 폭을 살짝 늘렸습니다 */
+.notice-board-header,
+.notice-row {
+  display: grid;
+  grid-template-columns: 80px 120px 1fr 140px; /* 120px -> 140px로 변경 */
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 3️⃣ 새로 개편된 페이지네이션 버튼 디자인 */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px; /* 버튼 사이 간격을 살짝 좁힘 */
+  margin-top: 40px;
+}
+
+.page-arrow-btn, .page-number-btn {
+  width: 36px; /* 클릭하기 편하게 36px로 키움 */
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  border-radius: 6px; /* 살짝 둥글게 */
+  cursor: pointer;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.page-arrow-btn:hover:not(:disabled), 
+.page-number-btn:hover:not(.active) {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.page-number-btn.active {
+  background-color: #000000;
+  color: white;
+  border-color: #000000;
+  font-weight: 700;
+}
+
+.page-arrow-btn:disabled {
+  background-color: #f8fafc;
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* 모달 배경 (어두운 오버레이) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.5); /* 세련된 짙은 남색 반투명 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 모달 본체 */
+.modal-content-box {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.close-btn:hover {
+  color: #0f172a;
+}
+
+/* 폼 입력 영역 */
+.notice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto; /* 내용이 길어지면 스크롤 */
+  padding-right: 4px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.required {
+  color: #ef4444; /* 빨간색 별표 */
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #877dde;
+}
+
+.form-group textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+/* 하단 버튼 영역 */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background-color: #f8fafc;
+}
+
+/* 🌟 추천하셨던 보라색/파란색 버튼 */
+.submit-btn {
+  padding: 10px 24px;
+  border: none;
+  background-color: #877dde; /* 수민님 Pick 색상 */
+  color: #ffffff;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #695cc7; /* Hover 시 부드럽게 짙어짐 */
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.notice-detail-container {
+  width: 100%;
+  max-width: 900px; /* 읽기 편한 최적의 가로 넓이 */
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.notice-detail-message {
+  text-align: center;
+  padding: 100px 0;
+  color: #64748b;
+  font-size: 16px;
+}
+.notice-detail-message.error {
+  color: #ef4444;
+}
+
+/* 헤더 영역 */
+.detail-header {
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 24px;
+  margin-bottom: 40px;
+}
+
+.detail-header .badge {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #e2e8f0;
+  color: #475569;
+}
+.badge.update { background-color: #dbeafe; color: #1e40af; }
+.badge.event { background-color: #fce7f3; color: #9d174d; }
+.badge.notice { background-color: #f1f5f9; color: #334155; }
+
+.detail-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.detail-meta {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* 본문 영역 */
+.detail-body {
+  min-height: 300px;
+  margin-bottom: 60px;
+}
+
+.detail-thumbnail {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.detail-thumbnail img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.detail-content {
+  font-size: 16px;
+  color: #334155;
+  line-height: 1.8;
+  white-space: pre-wrap; /* 🌟 줄바꿈(\n)을 화면에 그대로 렌더링 */
+  word-break: break-word;
+}
+
+/* 하단 버튼 영역 */
+.detail-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+}
+
+.list-btn, .edit-btn, .delete-btn {
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.list-btn {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+.list-btn:hover { background-color: #f8fafc; border-color: #94a3b8; }
+
+.admin-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.edit-btn {
+  background-color: #877dde; /* 수민님 Pick 컬러 */
+  border: none;
+  color: #ffffff;
+}
+.edit-btn:hover { background-color: #695cc7; }
+
+.delete-btn {
+  background-color: #ffffff;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+.delete-btn:hover { background-color: #fef2f2; }
+
+/* 전체 컨테이너 */
+.expert-finder-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.expert-header {
+  margin-bottom: 40px;
+}
+
+.expert-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.expert-header p {
+  font-size: 16px;
+  color: #64748b;
+}
+
+/* 레이아웃 (사이드바 + 메인 콘텐츠) */
+.expert-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* 왼쪽 사이드바 (필터) */
+.expert-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background-color: #f8fafc;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-group {
+  margin-bottom: 32px;
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.filter-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-list li {
+  font-size: 15px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.filter-list li:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.filter-list li.active {
+  background-color: #e0dcf8; /* 연한 보라색 배경 */
+  color: #695cc7; /* 포인트 컬러 */
+  font-weight: 700;
+}
+
+/* 오른쪽 메인 콘텐츠 */
+.expert-content {
+  flex: 1;
+}
+
+.content-header {
+  margin-bottom: 20px;
+  font-size: 15px;
+  color: #475569;
+}
+
+.content-header strong {
+  color: #877dde; /* 포인트 컬러 */
+}
+
+/* 전문가 카드 그리드 */
+.expert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+/* 전문가 개별 카드 */
+.expert-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.expert-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.card-top {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.expert-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+}
+
+.expert-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.expert-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.expert-name span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.expert-company, .expert-region {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 4px 0;
+}
+
+.card-middle {
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.expert-desc {
+  font-size: 15px;
+  color: #334155;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
+  word-break: keep-all;
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+}
+
+.expert-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+/* 카드 내 수정/삭제 버튼 */
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.edit-btn {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+.edit-btn:hover { background-color: #e2e8f0; }
+
+.delete-btn {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+}
+.delete-btn:hover { background-color: #fee2e2; }
+
+/* 빈 상태 */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  color: #64748b;
+  background-color: #f8fafc;
+  border-radius: 12px;
 }
