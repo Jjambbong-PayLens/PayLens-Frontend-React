@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getLabors, updateLaborProfile, deleteLaborProfile, applyLaborRole, requestUploadUrls, uploadFilesToS3, completeUploads } from '../utils/documentApi';
+import { getLabors, updateLaborProfile, deleteLaborProfile, applyLaborRole, requestUploadUrls, uploadFilesToS3, completeUploads, verifyUserAuth} from '../utils/documentApi';
 import { useRef } from 'react';
 import AdminLaborModal from './AdminLaborModal';
 import { getUser } from '../utils/auth';
@@ -24,7 +24,7 @@ function ExpertFinder() {
   const [selectedRegion, setSelectedRegion] = useState('전체');
   const [selectedSpecialty, setSelectedSpecialty] = useState('전체');
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const [isAdmin, setIsAdmin] = useState(false);
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const adminCardRef = useRef(null);
@@ -50,6 +50,20 @@ function ExpertFinder() {
     fetchExpertList();
   }, []);
 
+    // 관리자 권한 확인
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const userInfo = await verifyUserAuth();
+        setIsAdmin(userInfo?.role === 'ADMIN');
+      } catch (err) {
+        console.error('권한 확인 실패:', err);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
+  
   // fixed button vertical position updater: align with admin card center
   useEffect(() => {
     const updateTop = () => {

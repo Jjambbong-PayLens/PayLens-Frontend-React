@@ -6,6 +6,7 @@ import api from '../utils/api';
 import PaymentModal from './PaymentModal';
 import DocumentListModal from './DocumentListModal';
 import AdminLaborModal from './AdminLaborModal'; 
+import { verifyUserAuth } from '../utils/documentApi';
 
 function MyPage() {
   const { t, i18n } = useTranslation();
@@ -22,11 +23,11 @@ function MyPage() {
   const [isDocsLoading, setIsDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState(null);
   
-  const [isAdmin, setIsAdmin] = useState(true); 
+  const [isAdmin, setIsAdmin] = useState(false); 
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false); 
-  // 🌟 2. 지워졌던 상태값 선언 복구!
+
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false); 
   
   const totalCount = analyses.length;
@@ -51,6 +52,20 @@ function MyPage() {
     }
   }, [t]);
 
+    // 관리자 권한 확인
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const userInfo = await verifyUserAuth();
+        setIsAdmin(userInfo?.role === 'ADMIN');
+      } catch (err) {
+        console.error('권한 확인 실패:', err);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
+  
   useEffect(() => {
     fetchAnalyses();
   }, [fetchAnalyses]);
