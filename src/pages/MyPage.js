@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../utils/api';
 import PaymentModal from './PaymentModal';
 import DocumentListModal from './DocumentListModal';
+import AdminLaborModal from './AdminLaborModal'; 
 
 function MyPage() {
   const { t, i18n } = useTranslation();
@@ -21,11 +22,12 @@ function MyPage() {
   const [isDocsLoading, setIsDocsLoading] = useState(true);
   const [docsError, setDocsError] = useState(null);
   
-  // 🌟 (임시) 현재는 true로 설정되어 있으나, 나중에 백엔드에서 받아온 권한(user?.role === 'ADMIN')으로 교체하세요.
   const [isAdmin, setIsAdmin] = useState(true); 
 
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false); 
+  // 🌟 2. 지워졌던 상태값 선언 복구!
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false); 
   
   const totalCount = analyses.length;
   const currentMonth = new Date().getMonth();
@@ -131,7 +133,6 @@ function MyPage() {
         </div>
       </section>
 
-      {/* 🌟 관리자 전용 섹션 다국어 적용 */}
       {isAdmin && (
         <section className="card admin-section" style={{ 
           marginTop: '24px', 
@@ -272,6 +273,8 @@ function MyPage() {
         documents={analyses} 
         onDeleteDoc={handleDeleteAnalysis}
       />
+      
+      <AdminLaborModal isOpen={isAdminModalOpen} onClose={() => setIsAdminModalOpen(false)} />
     </main>
   );
 }
