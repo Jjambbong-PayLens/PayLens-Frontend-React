@@ -2,14 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import NoticeModal from './NoticeModal';
-import { getNotices } from '../utils/documentApi'; // 방금 추가하신 api 함수
-
-const categoryMap = {
-  all: '전체',
-  NOTICE: '일반공지',
-  EVENT: '이벤트',
-  UPDATE: '업데이트'
-};
+import { getNotices } from '../utils/documentApi';
 
 function NoticePage() {
   const { t } = useTranslation();
@@ -26,16 +19,13 @@ function NoticePage() {
 
   const ITEMS_PER_PAGE = 20;
 
-  // 🚀 GET API 연동 함수 (완벽하게 정리됨)
   const fetchNotices = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // apiFetch가 내부적으로 에러 처리와 result 추출을 모두 해줍니다!
       const result = await getNotices();
       
-      // 결과값이 배열인지 확인 후 내림차순 정렬하여 저장
       if (Array.isArray(result)) {
         const sortedNotices = result.sort((a, b) => b.noticeId - a.noticeId);
         setNotices(sortedNotices);
@@ -45,7 +35,7 @@ function NoticePage() {
 
     } catch (err) {
       console.error('공지사항 조회 실패:', err);
-      setError(err.message || '공지사항 목록을 불러오는 중 오류가 발생했습니다.');
+      setError(err.message || t('NoticePage_msg_error', '공지사항 목록을 불러오는 중 오류가 발생했습니다.'));
     } finally {
       setIsLoading(false);
     }
@@ -84,8 +74,11 @@ function NoticePage() {
 
   const handleSuccess = () => {
     setIsModalOpen(false);
-    fetchNotices(); // 작성 완료 시 목록 새로고침
+    fetchNotices(); 
   };
+
+  // 카테고리 렌더링용 배열
+  const categories = ['all', 'NOTICE', 'EVENT', 'UPDATE'];
 
   return (
     <div className="notice-page-container">
@@ -98,36 +91,37 @@ function NoticePage() {
         {isAdmin && (
           <div className="admin-actions">
             <button className="write-notice-btn" onClick={() => setIsModalOpen(true)}>
-              + 공지사항 작성
+              {t('NoticePage_btn_write', '+ 공지사항 작성')}
             </button>
           </div>
         )}
       </header>
 
       <div className="category-tabs">
-        {['all', 'NOTICE', 'EVENT', 'UPDATE'].map(cat => (
+        {categories.map(cat => (
           <button 
             key={cat}
             className={`category-tab-btn ${activeCategory === cat ? 'active' : ''}`} 
             onClick={() => handleCategoryChange(cat)}
           >
-            {categoryMap[cat]}
+            {/* 언어 파일에 맞게 매핑: all -> NoticePage_category_all, NOTICE -> NoticePage_category_notice */}
+            {t(`NoticePage_category_${cat.toLowerCase()}`)}
           </button>
         ))}
       </div>
 
       <section className="notice-board">
         <div className="notice-board-header">
-          <span className="col-id">NO</span>
-          <span className="col-category">분류</span>
-          <span className="col-title">제목</span>
-          <span className="col-date">등록일</span>
+          <span className="col-id">{t('NoticePage_col_id', 'NO')}</span>
+          <span className="col-category">{t('NoticePage_col_category', '분류')}</span>
+          <span className="col-title">{t('NoticePage_col_title', '제목')}</span>
+          <span className="col-date">{t('NoticePage_col_date', '등록일')}</span>
         </div>
 
         <div className="notice-board-body">
           {isLoading ? (
             <div className="empty-state">
-              <p>공지사항을 불러오는 중입니다...</p>
+              <p>{t('NoticePage_msg_loading', '공지사항을 불러오는 중입니다...')}</p>
             </div>
           ) : error ? (
             <div className="empty-state">
@@ -142,7 +136,9 @@ function NoticePage() {
               >
                 <span className="col-id">{notice.noticeId}</span>
                 <span className="col-category">
-                  <span className={`badge ${notice.category.toLowerCase()}`}>{categoryMap[notice.category]}</span>
+                  <span className={`badge ${notice.category.toLowerCase()}`}>
+                    {t(`NoticePage_category_${notice.category.toLowerCase()}`)}
+                  </span>
                 </span>
                 <span className="col-title">{notice.title}</span>
                 <span className="col-date">{formatDate(notice.createdAt)}</span>
@@ -150,7 +146,7 @@ function NoticePage() {
             ))
           ) : (
             <div className="empty-state">
-              <p>등록된 공지사항이 없습니다.</p>
+              <p>{t('NoticePage_msg_empty', '등록된 공지사항이 없습니다.')}</p>
             </div>
           )}
         </div>
